@@ -7,5 +7,10 @@ int main() {
 
     printf("Surprisingly enough, the dot product of two perpendicular vectors is %f\n", vector_dot(a, b));
 
+    #ifdef DEBUG
+        printf("a = {%f, %f}\n", a.x, a.y);
+        printf("b = {%f, %f}\n", b.x, b.y);
+    #endif 
+
     return 0;
 }

@@ -3,11 +3,18 @@ class Compiler:
         self.executable_path = None
         self.unique_flags = {}
 
-    def compile_file(self, in_file, out_file):
+    def _build_defs(self, definitions):
+        pass
+
+    def _build_flags(self, flags):
+        return ['-'+f for f in flags]
+
+    def compile_file(self, in_file, out_file, additional_args=[]):
         import subprocess
 
         print('Compiling', in_file, '->', out_file, end='... ')
         self._args.extend(self.unique_flags.values())
+        self._args.extend(additional_args)
         result = subprocess.run(self._args, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
         if result.returncode == 0:
@@ -17,11 +24,12 @@ class Compiler:
             print('fail')
             return False
 
-    def compile_object(self, in_file, out_file):
+    def compile_object(self, in_file, out_file, additional_args=[]):
         import subprocess
 
         print('Compiling', in_file, '->', out_file, end='... ')
         self._args.extend(self.unique_flags.values())
+        self._args.extend(additional_args)
         result = subprocess.run(self._args, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
         if result.returncode == 0:
@@ -45,9 +53,13 @@ class Compiler:
 
         # Go through each source file and then link them
         object_files = []
+        additional_args = self._build_defs(project.definitions)
+        additional_args.extend(self._build_flags(project.flags))
 
         for file in project.sources:
-            in_file = os.path.relpath(file)
+            in_file = os.path.realpath(file)
+            in_file = os.path.relpath(in_file, project.working_dir)
+
             # TODO: Something that's not this dumb
             out_file = os.path.join('build/', in_file)
             out_file = os.path.splitext(out_file)[0] + '.o'
@@ -58,7 +70,7 @@ class Compiler:
                 os.makedirs(out_dir)
 
             # Fail if one of the files doesn't compile
-            if not self.compile_object(in_file, out_file):
+            if not self.compile_object(file, out_file, additional_args):
                 return False
 
             object_files.append(out_file)
@@ -92,6 +104,9 @@ class GCCCompiler(Compiler):
         if not os.path.isfile(self.executable_path):
             raise CompilerNotFoundException()
 
+    def _build_defs(self, definitions):
+        return ['-D'+x + ('='+y if y is not None else '') for x,y in definitions.items()]
+
     def optimize(self, mode):
         mode_to_flag = {
             'none': '-O0',
@@ -112,13 +127,13 @@ class GCCCompiler(Compiler):
         self.unique_flags['optimize'] = mode_to_flag[mode]
         return True
 
-    def compile_file(self, in_file, out_file):
+    def compile_file(self, in_file, out_file, additional_args=[]):
         self._args = [self.executable_path, in_file, '-o', out_file]
-        return super().compile_file(in_file, out_file)
+        return super().compile_file(in_file, out_file, additional_args)
 
-    def compile_object(self, in_file, out_file):
+    def compile_object(self, in_file, out_file, additional_args=[]):
         self._args = [self.executable_path, '-c', in_file, '-o', out_file]
-        return super().compile_object(in_file, out_file)
+        return super().compile_object(in_file, out_file, additional_args)
 
     def link_executable(self, in_files, out_file):
         self._args = [self.executable_path]
