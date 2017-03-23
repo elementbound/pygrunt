@@ -10,6 +10,8 @@ def main():
     project.add_sources('*.cpp')
     project.add_sources('mesh/*.cpp')
 
+    # The order of linked libraries is preserved
+    # The same does not apply to source files
     project.link('glfw3')
     project.link('gdi32')
     project.link('opengl32')
