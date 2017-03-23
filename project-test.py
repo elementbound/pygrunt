@@ -1,11 +1,12 @@
-import pygrunt.compiler
-import pygrunt.project
+import pygrunt
 
 def main():
-    project = pygrunt.project.Project('vecmath')
+    project = pygrunt.Project('vecmath')
+    project.working_dir = 'compile-src/'
+    project.output_dir = 'build/'
     project.add_sources('compile-src/vecmath/*.c')
 
-    cc = pygrunt.compiler.GCCCompiler()
+    cc = pygrunt.GCCCompiler()
     cc.optimize('size')
     cc.compile_project(project)
 

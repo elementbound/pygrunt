@@ -5,6 +5,7 @@ class Project:
         self.sources = []
         self.include_dirs = []
         self.linker_flags = []
+        self.libraries = []
         self.working_dir = None
         self.output_dir = None
 

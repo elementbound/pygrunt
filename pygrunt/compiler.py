@@ -4,13 +4,39 @@ class Compiler:
         self.unique_flags = {}
 
     def compile_file(self, in_file, out_file):
-        pass
+        import subprocess
+
+        print('Compiling', in_file, '->', out_file, end='... ')
+        self._args.extend(self.unique_flags.values())
+        result = subprocess.run(self._args, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+
+        if result.returncode == 0:
+            print('success')
+            return True
+        else:
+            print('fail')
+            return False
 
     def compile_object(self, in_file, out_file):
-        pass
+        import subprocess
+
+        print('Compiling', in_file, '->', out_file, end='... ')
+        self._args.extend(self.unique_flags.values())
+        result = subprocess.run(self._args, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+
+        if result.returncode == 0:
+            print('success')
+            return True
+        else:
+            print('fail')
+            return False
 
     def link_executable(self, in_files, out_file):
-        pass
+        import subprocess
+
+        print('Linking', out_file, '... ')
+        result = subprocess.run(self._args)
+        return result.returncode == 0
 
     def compile_project(self, project):
         import os.path
@@ -84,45 +110,20 @@ class GCCCompiler(Compiler):
             return False
 
         self.unique_flags['optimize'] = mode_to_flag[mode]
+        return True
 
     def compile_file(self, in_file, out_file):
-        import subprocess
-
-        print('Compiling', in_file, '->', out_file, end='... ')
-        args = [self.executable_path, in_file, '-o', out_file]
-        args.extend(self.unique_flags.values())
-        result = subprocess.run(args)
-
-        if result.returncode == 0:
-            print('success')
-            return True
-        else:
-            print('fail')
-            return False
+        self._args = [self.executable_path, in_file, '-o', out_file]
+        return super().compile_file(in_file, out_file)
 
     def compile_object(self, in_file, out_file):
-        import subprocess
-
-        print('Compiling', in_file, '->', out_file, end='... ')
-        args = [self.executable_path, '-c', in_file, '-o', out_file]
-        args.extend(self.unique_flags.values())
-        result = subprocess.run(args)
-
-        if result.returncode == 0:
-            print('success')
-            return True
-        else:
-            print('fail')
-            return False
+        self._args = [self.executable_path, '-c', in_file, '-o', out_file]
+        return super().compile_object(in_file, out_file)
 
     def link_executable(self, in_files, out_file):
-        import subprocess
+        self._args = [self.executable_path]
+        self._args.extend(in_files)
+        self._args.extend(['-o', out_file])
+        self._args.extend(self.unique_flags.values())
 
-        print('Linking', out_file, '... ')
-        args = [self.executable_path]
-        args.extend(in_files)
-        args.extend(['-o', out_file])
-        args.extend(self.unique_flags.values())
-
-        result = subprocess.run(args)
-        return result.returncode == 0
+        return super().link_executable(in_files, out_file)
