@@ -23,7 +23,7 @@ class Compiler:
         if print_name is None:
             print_name = in_file
 
-        print(Style.object('Compiling', print_name, '->', out_file, '... '))
+        #print(Style.object('Compiling', print_name, '->', out_file, '... '))
         self._args.extend(self._build_unique_flags())
         self._args.extend(additional_args)
         result = subprocess.run(self._args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
@@ -47,7 +47,7 @@ class Compiler:
     def link_library(self, in_files, out_file):
         import subprocess
 
-        print(Style.link('Linking library', out_file, '... '))
+        print(Style.link('Linking library', out_file))
         result = subprocess.run(self._args)
         return result.returncode == 0
 
@@ -55,6 +55,9 @@ class Compiler:
         import os.path
 
         project.sanitize()
+
+        print('Source directory is', project.working_dir)
+        print('Build directory is', project.output_dir)
 
         # Go through each source file and then link them
         object_files = []
@@ -66,7 +69,7 @@ class Compiler:
             in_file = os.path.relpath(in_file, project.working_dir)
 
             # TODO: Something that's not this dumb
-            out_file = os.path.join('build/', in_file)
+            out_file = os.path.join(project.output_dir, in_file)
             out_file = os.path.splitext(out_file)[0] + '.o'
             out_dir = os.path.dirname(out_file)
 
@@ -74,9 +77,14 @@ class Compiler:
             if not os.path.exists(out_dir):
                 os.makedirs(out_dir)
 
-            # Fail if one of the files doesn't compile
+            # Print what's happening
+            print_in = in_file
+            print_out = os.path.relpath(out_file, project.output_dir)
             print('[{0:3.0f}%]'.format((idx+1)/len(project.sources)*100), end=' ')
-            if not self.compile_object(file, out_file, print_name=in_file, additional_args=additional_args):
+            print(Style.object('Compiling', in_file, '->', print_out))
+
+            # Fail if one of the files doesn't compile
+            if not self.compile_object(file, out_file, additional_args=additional_args):
                 return False
 
             object_files.append(out_file)
