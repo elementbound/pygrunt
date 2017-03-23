@@ -12,12 +12,7 @@ def main():
 
     # The order of linked libraries is preserved
     # The same does not apply to source files
-    project.link('glfw3')
-    project.link('gdi32')
-    project.link('opengl32')
-    project.link('glew32')
-    project.link('png')
-    project.link('z')
+    project.link('glfw3', 'gdi32', 'opengl32', 'glew32', 'png', 'z')
 
     cc = pygrunt.GCCCompiler(cpp=True)
     cc.optimize('more')

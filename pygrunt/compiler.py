@@ -38,7 +38,6 @@ class Compiler:
         import subprocess
 
         print('Linking executable', out_file, '... ')
-        print('\n\t'.join(self._args))
         result = subprocess.run(self._args)
         return result.returncode == 0
 
@@ -46,7 +45,6 @@ class Compiler:
         import subprocess
 
         print('Linking library', out_file, '... ')
-        print('\n\t'.join(self._args))
         result = subprocess.run(self._args)
         return result.returncode == 0
 

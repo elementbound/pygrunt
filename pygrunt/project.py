@@ -31,11 +31,13 @@ class Project:
         del self.flags[flag]
 
     # Libraries to link
-    def link(self, library):
-        self.libraries[library] = True
+    def link(self, *args):
+        for library in args:
+            self.libraries[library] = True
 
-    def unlink(self, library):
-        del self.libraryies[library]
+    def unlink(self, *args):
+        for library in args:
+            del self.libraryies[library]
 
     # For now accept a single parameter and glob
     def add_sources(self, sources, recursive=False):
