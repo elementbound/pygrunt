@@ -6,6 +6,7 @@ def main():
     project.output_dir = 'build/'
 
     project.define('DEBUG')
+    project.flag('Wall')
     project.add_sources('compile-src/vecmath/*.c')
 
     cc = pygrunt.GCCCompiler()

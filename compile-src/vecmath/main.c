@@ -10,7 +10,7 @@ int main() {
     #ifdef DEBUG
         printf("a = {%f, %f}\n", a.x, a.y);
         printf("b = {%f, %f}\n", b.x, b.y);
-    #endif 
+    #endif
 
     return 0;
 }

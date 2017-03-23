@@ -9,35 +9,24 @@ class Compiler:
     def _build_flags(self, flags):
         return ['-'+f for f in flags]
 
-    def compile_file(self, in_file, out_file, additional_args=[]):
-        import subprocess
-
-        print('Compiling', in_file, '->', out_file, end='... ')
-        self._args.extend(self.unique_flags.values())
-        self._args.extend(additional_args)
-        result = subprocess.run(self._args, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-
-        if result.returncode == 0:
-            print('success')
-            return True
-        else:
-            print('fail')
-            return False
-
     def compile_object(self, in_file, out_file, additional_args=[]):
         import subprocess
 
         print('Compiling', in_file, '->', out_file, end='... ')
         self._args.extend(self.unique_flags.values())
         self._args.extend(additional_args)
-        result = subprocess.run(self._args, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        result = subprocess.run(self._args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
 
-        if result.returncode == 0:
-            print('success')
-            return True
-        else:
-            print('fail')
-            return False
+        print('success' if result.returncode == 0 else 'fail')
+
+        # TODO: do something useful with output
+        if result.stdout:
+            print(result.stdout)
+
+        if result.stderr:
+            print(result.stderr)
+
+        return result.returncode == 0
 
     def link_executable(self, in_files, out_file):
         import subprocess
@@ -126,11 +115,7 @@ class GCCCompiler(Compiler):
 
         self.unique_flags['optimize'] = mode_to_flag[mode]
         return True
-
-    def compile_file(self, in_file, out_file, additional_args=[]):
-        self._args = [self.executable_path, in_file, '-o', out_file]
-        return super().compile_file(in_file, out_file, additional_args)
-
+        
     def compile_object(self, in_file, out_file, additional_args=[]):
         self._args = [self.executable_path, '-c', in_file, '-o', out_file]
         return super().compile_object(in_file, out_file, additional_args)
