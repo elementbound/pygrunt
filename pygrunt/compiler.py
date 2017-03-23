@@ -1,3 +1,5 @@
+from .style import Style
+
 class Compiler:
     def __init__(self):
         self.executable_path = None
@@ -15,15 +17,16 @@ class Compiler:
     def _build_library_links(self, libs):
         pass
 
-    def compile_object(self, in_file, out_file, additional_args=[]):
+    def compile_object(self, in_file, out_file, print_name=None, additional_args=[]):
         import subprocess
 
-        print('Compiling', in_file, '->', out_file, end='... ')
+        if print_name is None:
+            print_name = in_file
+
+        print(Style.object('Compiling', print_name, '->', out_file, '... '))
         self._args.extend(self._build_unique_flags())
         self._args.extend(additional_args)
         result = subprocess.run(self._args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
-
-        print('success' if result.returncode == 0 else 'fail')
 
         # TODO: do something useful with output
         if result.stdout:
@@ -37,14 +40,14 @@ class Compiler:
     def link_executable(self, in_files, out_file):
         import subprocess
 
-        print('Linking executable', out_file, '... ')
+        print(Style.link('Linking executable', out_file, '... '))
         result = subprocess.run(self._args)
         return result.returncode == 0
 
     def link_library(self, in_files, out_file):
         import subprocess
 
-        print('Linking library', out_file, '... ')
+        print(Style.link('Linking library', out_file, '... '))
         result = subprocess.run(self._args)
         return result.returncode == 0
 
@@ -58,7 +61,7 @@ class Compiler:
         additional_args = self._build_defs(project.definitions)
         additional_args.extend(self._build_flags(project.flags))
 
-        for file in project.sources:
+        for idx, file in enumerate(project.sources):
             in_file = os.path.realpath(file)
             in_file = os.path.relpath(in_file, project.working_dir)
 
@@ -72,7 +75,8 @@ class Compiler:
                 os.makedirs(out_dir)
 
             # Fail if one of the files doesn't compile
-            if not self.compile_object(file, out_file, additional_args):
+            print('[{0:3.0f}%]'.format((idx+1)/len(project.sources)*100), end=' ')
+            if not self.compile_object(file, out_file, print_name=in_file, additional_args=additional_args):
                 return False
 
             object_files.append(out_file)
@@ -150,9 +154,9 @@ class GCCCompiler(Compiler):
         else:
             self.unique_flags['std'] = '-std='+std
 
-    def compile_object(self, in_file, out_file, additional_args=[]):
+    def compile_object(self, in_file, out_file, print_name=None, additional_args=[]):
         self._args = [self.executable_path, '-c', in_file, '-o', out_file]
-        return super().compile_object(in_file, out_file, additional_args)
+        return super().compile_object(in_file, out_file, print_name, additional_args)
 
     def link_executable(self, in_files, out_file):
         self._args = [self.executable_path]
