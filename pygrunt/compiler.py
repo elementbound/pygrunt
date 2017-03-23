@@ -12,6 +12,9 @@ class Compiler:
     def _build_unique_flags(self):
         return [value for value in self.unique_flags.values() if value is not None]
 
+    def _build_library_links(self, libs):
+        pass
+
     def compile_object(self, in_file, out_file, additional_args=[]):
         import subprocess
 
@@ -34,7 +37,16 @@ class Compiler:
     def link_executable(self, in_files, out_file):
         import subprocess
 
-        print('Linking', out_file, '... ')
+        print('Linking executable', out_file, '... ')
+        print('\n\t'.join(self._args))
+        result = subprocess.run(self._args)
+        return result.returncode == 0
+
+    def link_library(self, in_files, out_file):
+        import subprocess
+
+        print('Linking library', out_file, '... ')
+        print('\n\t'.join(self._args))
         result = subprocess.run(self._args)
         return result.returncode == 0
 
@@ -67,15 +79,23 @@ class Compiler:
 
             object_files.append(out_file)
 
+        object_files.extend(self._build_library_links(project.libraries))
+
         # Produce executable
-        self.link_executable(object_files, project.executable)
+        if project.type == 'executable':
+            self.link_executable(object_files, project.executable)
+        elif project.type == 'library':
+            self.link_library(object_files, project.executable)
+        else:
+            print('Can\'t produce', project.type)
 
 class CompilerNotFoundException(Exception):
     pass
 
 class GCCCompiler(Compiler):
-    def __init__(self, executable_path=None):
+    def __init__(self, executable_path=None, cpp=False):
         import os
+        import platform
 
         super().__init__()
 
@@ -85,11 +105,15 @@ class GCCCompiler(Compiler):
             path = os.environ['PATH']
             path = path.split(';')
 
+            compiler_name = 'g++' if cpp else 'gcc'
+            if platform.system() == 'Windows':
+                compiler_name += '.exe'
+
             print('Looking for GCC on PATH... ')
             for dir in path:
                 if os.path.isfile(dir+'/gcc.exe'):
-                    self.executable_path = dir+'/gcc.exe'
-                    print('Found GCC at', dir)
+                    self.executable_path = os.path.join(dir, compiler_name)
+                    print('Found GCC at', self.executable_path)
                     break
 
         # Check if the executable exists
@@ -98,6 +122,9 @@ class GCCCompiler(Compiler):
 
     def _build_defs(self, definitions):
         return ['-D'+x + ('='+y if y is not None else '') for x,y in definitions.items()]
+
+    def _build_library_links(self, libs):
+        return ['-l'+x for x in libs]
 
     def optimize(self, mode):
         mode_to_flag = {
@@ -125,24 +152,6 @@ class GCCCompiler(Compiler):
         else:
             self.unique_flags['std'] = '-std='+std
 
-    def output_type(self, type):
-        type_to_flag = {
-            'executable': None,
-            'library': '-shared'
-        }
-
-        if type is None:
-            self.unique_flags['output_type'] = None
-            return 
-
-        if type not in type_to_flag:
-            # TODO: exception instead of print?
-            print('Unknown output type:', type)
-            print('Allowed types:', ', '.join(type_to_flag.keys()))
-            return False
-
-        self.unique_flags['output_type'] = type_to_flag[type]
-
     def compile_object(self, in_file, out_file, additional_args=[]):
         self._args = [self.executable_path, '-c', in_file, '-o', out_file]
         return super().compile_object(in_file, out_file, additional_args)
@@ -154,3 +163,11 @@ class GCCCompiler(Compiler):
         self._args.extend(self.unique_flags.values())
 
         return super().link_executable(in_files, out_file)
+
+    def link_library(self, in_files, out_file):
+        self._args = [self.executable_path, '-shared']
+        self._args.extend(in_files)
+        self._args.extend(['-o', out_file+'.a'])
+        self._args.extend(self.unique_flags.values())
+
+        return super().link_library(in_files, out_file+'.a')
