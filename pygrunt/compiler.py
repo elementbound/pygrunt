@@ -9,11 +9,14 @@ class Compiler:
     def _build_flags(self, flags):
         return ['-'+f for f in flags]
 
+    def _build_unique_flags(self):
+        return [value for value in self.unique_flags.values() if value is not None]
+
     def compile_object(self, in_file, out_file, additional_args=[]):
         import subprocess
 
         print('Compiling', in_file, '->', out_file, end='... ')
-        self._args.extend(self.unique_flags.values())
+        self._args.extend(self._build_unique_flags())
         self._args.extend(additional_args)
         result = subprocess.run(self._args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
 
@@ -115,7 +118,31 @@ class GCCCompiler(Compiler):
 
         self.unique_flags['optimize'] = mode_to_flag[mode]
         return True
-        
+
+    def standard(self, std):
+        if std == None:
+            del self.unique_flags['std']
+        else:
+            self.unique_flags['std'] = '-std='+std
+
+    def output_type(self, type):
+        type_to_flag = {
+            'executable': None,
+            'library': '-shared'
+        }
+
+        if type is None:
+            self.unique_flags['output_type'] = None
+            return 
+
+        if type not in type_to_flag:
+            # TODO: exception instead of print?
+            print('Unknown output type:', type)
+            print('Allowed types:', ', '.join(type_to_flag.keys()))
+            return False
+
+        self.unique_flags['output_type'] = type_to_flag[type]
+
     def compile_object(self, in_file, out_file, additional_args=[]):
         self._args = [self.executable_path, '-c', in_file, '-o', out_file]
         return super().compile_object(in_file, out_file, additional_args)

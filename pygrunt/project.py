@@ -28,7 +28,15 @@ class Project:
     # For now accept a single parameter and glob
     def add_sources(self, sources, recursive=False):
         from glob import glob
-        self.sources.extend(glob(sources, recursive=recursive))
+        import os
+
+        files = glob(sources, recursive=recursive)
+        if not files:
+            files = glob(self.working_dir+'/'+sources, recursive = recursive)
+        if not files:
+            print('Pattern did not match:', sources)
+
+        self.sources.extend(files)
 
     # Set some sane defaults
     def sanitize(self):
