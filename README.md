@@ -44,6 +44,15 @@ if __name__ == '__main__':
 
 ```
 
+Output:
+```
+Looking for GCC on PATH...
+Found GCC at D:\dev\compilers\mingw\bin\gcc.exe
+Compiling compile-src/vecmath\main.c -> build/vecmath\main.o... success
+Compiling compile-src/vecmath\vector.c -> build/vecmath\vector.o... success
+Linking executable build/vecmath ...
+```
+
 [GLwrap](https://github.com/elementbound/glwrap) compiled with pygrunt instead of CMake:
 
 ```python
@@ -76,3 +85,32 @@ def main():
 if __name__ == '__main__':
     main()
 ```
+
+Output:
+```
+Looking for GCC on PATH...
+Found GCC at D:\dev\compilers\mingw\bin\g++.exe
+Compiling D:\dev\python\pygrunt\compile-src\glwrap\fbo.cpp -> build/fbo.o... success
+Compiling D:\dev\python\pygrunt\compile-src\glwrap\meshutil.cpp -> build/meshutil.o... success
+Compiling D:\dev\python\pygrunt\compile-src\glwrap\resizable_window.cpp -> build/resizable_window.o... success
+Compiling D:\dev\python\pygrunt\compile-src\glwrap\shader.cpp -> build/shader.o... success
+Compiling D:\dev\python\pygrunt\compile-src\glwrap\texture.cpp -> build/texture.o... success
+Compiling D:\dev\python\pygrunt\compile-src\glwrap\texture_util.cpp -> build/texture_util.o... success
+Compiling D:\dev\python\pygrunt\compile-src\glwrap\util.cpp -> build/util.o... success
+Compiling D:\dev\python\pygrunt\compile-src\glwrap\verbose_window.cpp -> build/verbose_window.o... success
+Compiling D:\dev\python\pygrunt\compile-src\glwrap\window.cpp -> build/window.o... success
+Compiling D:\dev\python\pygrunt\compile-src\glwrap/mesh\basic_mesh.cpp -> build/mesh\basic_mesh.o... success
+Compiling D:\dev\python\pygrunt\compile-src\glwrap/mesh\separated_mesh.cpp -> build/mesh\separated_mesh.o... success
+Linking library build/glwrap.a ... 
+```
+
+## Todo ##
+
+* Decide what should go into the Compiler and what should go into the Project. The line between
+    the two is a bit ambigious at the moment. The Project should contain all the necessary
+    information, the Compiler should just turn those into instructions for the actual compiler
+    process.
+* Clean up directory separator handling ( occasionally that forward slash becomes a backslash
+    and vice versa )
+* More features, of course
+* If I have enough time, add support for another compiler ( clang? ) just as a proof of concept
