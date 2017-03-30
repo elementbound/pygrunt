@@ -16,6 +16,16 @@ class Project:
         self.executable = None
         self.type = 'executable'
 
+    # Include directories
+    def add_include_dir(self, directory):
+        import os.path
+        if not os.path.isabs(directory):
+            directory = os.path.join(self.working_dir, directory)
+            directory = os.path.realpath(directory)
+
+        if dir not in self.include_dirs:
+            self.include_dirs.append(directory)
+
     # Defines
     def define(self, name, value=None):
         self.definitions[name] = value

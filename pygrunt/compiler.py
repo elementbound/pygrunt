@@ -17,6 +17,9 @@ class Compiler:
     def _build_library_links(self, libs):
         pass
 
+    def _build_includes(self, includes):
+        pass
+
     def compile_object(self, in_file, out_file, print_name=None, additional_args=[]):
         import subprocess
 
@@ -63,6 +66,7 @@ class Compiler:
         object_files = []
         additional_args = self._build_defs(project.definitions)
         additional_args.extend(self._build_flags(project.flags))
+        additional_args.extend(self._build_includes(project.include_dirs))
 
         for idx, file in enumerate(project.sources):
             in_file = os.path.realpath(file)
@@ -135,6 +139,9 @@ class GCCCompiler(Compiler):
 
     def _build_library_links(self, libs):
         return ['-l'+x for x in libs]
+
+    def _build_includes(self, includes):
+        return ['-I'+i for i in includes]
 
     def optimize(self, mode):
         mode_to_flag = {
