@@ -101,7 +101,7 @@ Compiling D:\dev\python\pygrunt\compile-src\glwrap\verbose_window.cpp -> build/v
 Compiling D:\dev\python\pygrunt\compile-src\glwrap\window.cpp -> build/window.o... success
 Compiling D:\dev\python\pygrunt\compile-src\glwrap/mesh\basic_mesh.cpp -> build/mesh\basic_mesh.o... success
 Compiling D:\dev\python\pygrunt\compile-src\glwrap/mesh\separated_mesh.cpp -> build/mesh\separated_mesh.o... success
-Linking library build/glwrap.a ... 
+Linking library build/glwrap.a ...
 ```
 
 ## Todo ##
@@ -114,3 +114,11 @@ Linking library build/glwrap.a ...
     and vice versa )
 * More features, of course
 * If I have enough time, add support for another compiler ( clang? ) just as a proof of concept
+
+## License ##
+
+pygrunt is licensed under the GNU GPL v3 license. See [LICENSE](LICENSE) for more details.
+
+This license only applies to pygrunt code ( all source files under the pygrunt directory ),
+other components with different licenses may be present in the repository ( for example the
+compile-src directory ).
