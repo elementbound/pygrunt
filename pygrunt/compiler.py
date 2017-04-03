@@ -117,7 +117,7 @@ class GCCCompiler(Compiler):
         if self.executable_path is None:
             # Look for GCC in path
             path = os.environ['PATH']
-            path = path.split(';')
+            path = path.split(os.pathsep)
 
             compiler_name = 'g++' if cpp else 'gcc'
             if platform.system() == 'Windows':
@@ -125,8 +125,9 @@ class GCCCompiler(Compiler):
 
             print('Looking for GCC on PATH... ')
             for dir in path:
-                if os.path.isfile(dir+'/gcc.exe'):
-                    self.executable_path = os.path.join(dir, compiler_name)
+                candidate = os.path.join(dir, compiler_name)
+                if os.path.isfile(candidate):
+                    self.executable_path = candidate
                     print('Found GCC at', self.executable_path)
                     break
 
