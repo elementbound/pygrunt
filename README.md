@@ -19,28 +19,31 @@ Features are also in short supply, we'll see where this project goes.
 
 Write a Python script that uses the pygrunt module and let it do the work. Currently, if all
 you need is to compile a bunch of source files and link them together, pygrunt should be fine.
-See the repo's root directory for examples; here's both of them anyhow:
-
-A simple project with a few C files:
+See the repo's root directory for examples. Here's a simple one:
 
 ```python
 import pygrunt
+import platform
 
-def main():
+def build():
     project = pygrunt.Project('vecmath')
-    project.working_dir = 'compile-src/'
+    project.working_dir = 'compile-src/vecmath/'
     project.output_dir = 'build/'
+    project.sanitize()
 
     project.define('DEBUG')
     project.flag('Wall')
-    project.add_sources('vecmath/*.c')
+    project.sources.add('*.c')
+
+    if platform.system() is not 'Windows':
+        project.link('m')
 
     cc = pygrunt.GCCCompiler()
     cc.optimize('size')
     cc.compile_project(project)
 
 if __name__ == '__main__':
-    main()
+    build()
 
 ```
 
@@ -51,57 +54,6 @@ Found GCC at D:\dev\compilers\mingw\bin\gcc.exe
 Compiling compile-src/vecmath\main.c -> build/vecmath\main.o... success
 Compiling compile-src/vecmath\vector.c -> build/vecmath\vector.o... success
 Linking executable build/vecmath ...
-```
-
-[GLwrap](https://github.com/elementbound/glwrap) compiled with pygrunt instead of CMake:
-
-```python
-import pygrunt
-
-def main():
-    project = pygrunt.Project('glwrap')
-    project.working_dir = 'compile-src/glwrap/'
-    project.output_dir = 'build/'
-    project.type = 'library'
-    project.sanitize()
-
-    project.add_sources('*.cpp')
-    project.add_sources('mesh/*.cpp')
-
-    # The order of linked libraries is preserved
-    # The same does not apply to source files
-    project.link('glfw3')
-    project.link('gdi32')
-    project.link('opengl32')
-    project.link('glew32')
-    project.link('png')
-    project.link('z')
-
-    cc = pygrunt.GCCCompiler(cpp=True)
-    cc.optimize('more')
-    cc.standard('c++11')
-    cc.compile_project(project)
-
-if __name__ == '__main__':
-    main()
-```
-
-Output:
-```
-Looking for GCC on PATH...
-Found GCC at D:\dev\compilers\mingw\bin\g++.exe
-Compiling D:\dev\python\pygrunt\compile-src\glwrap\fbo.cpp -> build/fbo.o... success
-Compiling D:\dev\python\pygrunt\compile-src\glwrap\meshutil.cpp -> build/meshutil.o... success
-Compiling D:\dev\python\pygrunt\compile-src\glwrap\resizable_window.cpp -> build/resizable_window.o... success
-Compiling D:\dev\python\pygrunt\compile-src\glwrap\shader.cpp -> build/shader.o... success
-Compiling D:\dev\python\pygrunt\compile-src\glwrap\texture.cpp -> build/texture.o... success
-Compiling D:\dev\python\pygrunt\compile-src\glwrap\texture_util.cpp -> build/texture_util.o... success
-Compiling D:\dev\python\pygrunt\compile-src\glwrap\util.cpp -> build/util.o... success
-Compiling D:\dev\python\pygrunt\compile-src\glwrap\verbose_window.cpp -> build/verbose_window.o... success
-Compiling D:\dev\python\pygrunt\compile-src\glwrap\window.cpp -> build/window.o... success
-Compiling D:\dev\python\pygrunt\compile-src\glwrap/mesh\basic_mesh.cpp -> build/mesh\basic_mesh.o... success
-Compiling D:\dev\python\pygrunt\compile-src\glwrap/mesh\separated_mesh.cpp -> build/mesh\separated_mesh.o... success
-Linking library build/glwrap.a ...
 ```
 
 ## Todo ##
