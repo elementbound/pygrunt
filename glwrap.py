@@ -1,23 +1,28 @@
 import pygrunt
 
-def main():
-    project = pygrunt.Project('glwrap')
-    project.working_dir = 'compile-src/glwrap/'
-    project.output_dir = 'build/'
-    project.type = 'library'
-    project.sanitize()
+class GLWrap(pygrunt.Project):
+    def init(self):
+        self.working_dir = 'compile-src/glwrap/'
+        self.output_dir = 'build/'
+        self.type = 'library'
+        self.sanitize()
 
-    project.sources.add('*.cpp')
-    project.sources.add('mesh/*.cpp')
+        self.cc = pygrunt.GCCCompiler(cpp=True)
 
-    # The order of linked libraries is preserved
-    # The same does not apply to source files
-    project.link('glfw3', 'gdi32', 'opengl32', 'glew32', 'png', 'z')
+    def gather(self):
+        self.sources.add('*.cpp')
+        self.sources.add('mesh/*.cpp')
 
-    cc = pygrunt.GCCCompiler(cpp=True)
-    cc.optimize('more')
-    cc.standard('c++11')
-    cc.compile_project(project)
+        # The order of linked libraries is preserved
+        # The same does not apply to source files
+        self.link('glfw3', 'gdi32', 'opengl32', 'glew32', 'png', 'z')
+
+    def compile(self):
+        self.cc.optimize('more')
+        self.cc.standard('c++11')
+        self.cc.compile_project(self)
+
+build = GLWrap()
 
 if __name__ == '__main__':
-    main()
+    build.run()

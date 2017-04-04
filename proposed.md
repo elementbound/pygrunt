@@ -24,8 +24,9 @@ appropriate directory.
 Projects would have different stages:
  1. **Gather** - add source files and other dependencies  
  2. **Validate** - check dependencies, do other validations
- 3. **Compile** - produce binary
- 4. **Install** - optional, copy the resulting binary to compiler or to user-supplied location
+ 3. **Preprocess** - configure headers, generate code as necessary 
+ 4. **Compile** - produce binary
+ 5. **Install** - optional, copy the resulting binary to compiler or to user-supplied location
 
 Each stage corresponds to a function in the Project class. This class would be subclassed by the
 user, overriding each stage.

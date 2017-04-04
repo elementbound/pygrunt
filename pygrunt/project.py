@@ -1,10 +1,11 @@
 import collections
 from pathlib import Path
+from .style import Style
 from .fileset import FileSet, DirectorySet
 
-class Project:
-    def __init__(self, name):
-        self.name = name
+class BarebonesProject:
+    def __init__(self, name=None):
+        self.name = name if name is not None else self.__class__.__name__
 
         self.sources = FileSet()
         self.definitions = {}
@@ -18,15 +19,7 @@ class Project:
         self.executable = None
         self.type = 'executable'
 
-    # Include directories
-    def add_include_dir(self, directory):
-        import os.path
-        if not os.path.isabs(directory):
-            directory = os.path.join(self.working_dir, directory)
-            directory = os.path.realpath(directory)
-
-        if dir not in self.include_dirs:
-            self.include_dirs.append(directory)
+        self.stages = []
 
     # Defines
     def define(self, name, value=None):
@@ -50,19 +43,6 @@ class Project:
     def unlink(self, *args):
         for library in args:
             del self.libraryies[library]
-
-    # For now accept a single parameter and glob
-    def add_sources(self, sources, recursive=False):
-        from glob import glob
-        import os
-
-        files = glob(sources, recursive=recursive)
-        if not files:
-            files = glob(self.working_dir+'/'+sources, recursive = recursive)
-        if not files:
-            print('Pattern did not match:', sources)
-
-        self.sources.extend(files)
 
     # Set some sane defaults
     def sanitize(self):
@@ -89,3 +69,49 @@ class Project:
         self.output_dir = os.path.realpath(self.output_dir)
 
         self.sources.working_directory = Path(self.working_dir)
+
+    def run(self):
+        print(Style.title('Building', self.name))
+
+        for idx, stage in enumerate(self.stages):
+            print(Style.title('[{0}/{1}]'.format(idx+1, len(self.stages)), 'Running stage', stage.__name__))
+            stage()
+
+
+class Project(BarebonesProject):
+    def __init__(self, name=None):
+        super().__init__(name)
+
+        self.stages = [
+            self.init,
+            self.gather,
+            self.validate,
+            self.preprocess,
+            self.compile,
+            self.install
+        ]
+
+        # Filter out non-overloaded stages, since those do nothing
+        for stage in self.stages:
+            name = stage.__name__
+            if  getattr(self.__class__, name) == getattr(Project, name):
+                self.stages.remove(stage)
+
+    # Stages:
+    def init(self):
+        pass
+
+    def gather(self):
+        pass
+
+    def validate(self):
+        pass
+
+    def preprocess(self):
+        pass
+
+    def compile(self):
+        pass
+
+    def install(self):
+        pass
