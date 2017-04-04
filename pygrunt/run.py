@@ -1,4 +1,6 @@
-def run(file):
+from .style import Style
+
+def run(file, target='build'):
     import importlib
     import importlib.util
     import inspect
@@ -10,13 +12,17 @@ def run(file):
     spec.loader.exec_module(module)
 
     try:
-        build = getattr(module, 'build')
+        build = getattr(module, target)
     except:
-        print(Style.error(name, 'has no build attribute!'))
+        print(Style.error(name, 'has no {0} attribute!'.format(target)))
         return False
 
     if inspect.isfunction(build):
         return build()
+
+    if inspect.isclass(build):
+        instance = build()
+        return instance.run()
 
     try:
         run = getattr(build, 'run')
