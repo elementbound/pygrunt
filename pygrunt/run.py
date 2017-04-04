@@ -6,7 +6,8 @@ def run(file, target='build'):
     import inspect
     from pathlib import Path
 
-    name = Path(file).name
+    name = Path(file).with_suffix('')
+    name = str(name)
     spec = importlib.util.spec_from_file_location(name, file)
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
@@ -14,7 +15,7 @@ def run(file, target='build'):
     try:
         build = getattr(module, target)
     except:
-        print(Style.error(name, 'has no {0} attribute!'.format(target)))
+        print(Style.error('{project} has no {target} attribute!'.format(project=name, target=target)))
         return False
 
     if inspect.isfunction(build):
@@ -28,6 +29,7 @@ def run(file, target='build'):
         run = getattr(build, 'run')
     except:
         print(Style.error('build attribute is (supposedly) a class but has no run method!'))
+        return False
 
     return run()
 
