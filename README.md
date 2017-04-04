@@ -8,10 +8,9 @@ conditionally including or excluding source files, filter them based on certain 
 move files around on the filesystem or handle command-line parameters.
 
 Since the project is a one-night experiment so far ( *a too long night...* ), it supports only
-MinGW ( currently called GCCCompiler, to be fixed in the future ) on Windows ( sloppy
-slash-handling ). However, pygrunt is designed with compiler-independence in mind. It should
-be relatively easy to add support for other compilers, given enough knowledge about the compiler
-itself.
+MinGW ( currently called GCCCompiler, to be fixed in the future ). However, pygrunt is designed
+with compiler-independence in mind. It should be relatively easy to add support for other
+compilers, given enough knowledge about the compiler itself.
 
 Features are also in short supply, we'll see where this project goes.
 
@@ -84,16 +83,23 @@ Linking executable build/vecmath ...
 
 [Colorama](https://pypi.python.org/pypi/colorama) is used for fancy, colored output.
 
+## Name ##
+
+Yes, I'm aware that the name is already in use: [PyGrunt](https://github.com/Mayo-QIN/pygrunt)
+
+The project looks awesome, and also used the name earlier, which means **this project will be renamed
+in the future.**
+
 ## Todo ##
 
 * Decide what should go into the Compiler and what should go into the Project. The line between
     the two is a bit ambigious at the moment. The Project should contain all the necessary
     information, the Compiler should just turn those into instructions for the actual compiler
     process.
-* Clean up directory separator handling ( occasionally that forward slash becomes a backslash
-    and vice versa )
 * More features, of course
 * If I have enough time, add support for another compiler ( clang? ) just as a proof of concept
+
+For a better description of other planned features, see the [proposals](proposed.md).
 
 ## License ##
 
