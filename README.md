@@ -44,27 +44,24 @@ Here's a simple one:
 ```python
 import pygrunt
 import pygrunt.compiler
-import platform
 
 def build():
-    project = pygrunt.Project('vecmath')
-    project.working_dir = 'compile-src/vecmath/'
+    # Setup project
+    project = pygrunt.Project('hello')
+    project.working_dir = 'hello/'
     project.output_dir = 'build/'
+
+    # Sanitize aka. set reasonable defaults
+    # Also needed before adding sources
+    # ( otherwise pygrunt will be looking in the wrong directories )
     project.sanitize()
 
-    project.define('DEBUG')
-    project.flag('Wall')
+    # Add sources
     project.sources.add('*.c')
 
-    if platform.system() is not 'Windows':
-        project.link('m')
-
+    # Compile the whole thing
     cc = pygrunt.compiler.any()
-    cc.optimize('size')
     cc.compile_project(project)
-
-if __name__ == '__main__':
-    build()
 
 ```
 
@@ -72,11 +69,10 @@ Output:
 ```
 Looking for GCC on PATH...
 Found GCC at D:\dev\compilers\mingw\bin\gcc.exe
-Source directory is D:\dev\python\pygrunt\compile-src\vecmath
-Build directory is D:\dev\python\pygrunt\build
-[ 50%] Compiling main.c -> main.o
-[100%] Compiling vector.c -> vector.o
-Linking executable build/vecmath ...
+Source directory is D:\dev\python\pygrunt\examples\hello
+Build directory is D:\dev\python\pygrunt\examples\build
+[100%] Compiling hello.c -> hello.o
+Linking executable build/hello ...
 ```
 
 ## Dependencies ##
