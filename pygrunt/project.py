@@ -1,13 +1,14 @@
 import collections
+from .fileset import FileSet, DirectorySet
 
 class Project:
     def __init__(self, name):
         self.name = name
 
-        self.sources = []
+        self.sources = FileSet()
         self.definitions = {}
         self.flags = {}
-        self.include_dirs = []
+        self.include_dirs = DirectorySet()
         self.linker_flags = []
         self.libraries = collections.OrderedDict()
         self.working_dir = None

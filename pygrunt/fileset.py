@@ -2,11 +2,13 @@ import os
 from pathlib import Path
 from glob import glob
 
+# TODO: Use set instead of list
 class FileSet:
     def __init__(self):
         self._data = []
 
     def _process_str_paths(self, paths):
+        # TODO: Dies if a file doesn't exist 
         return [Path(file).resolve() for file in paths]
 
     def _glob(pattern, recursive, cwd):
@@ -79,3 +81,29 @@ class FileSet:
 
     def __repr__(self):
         return self._data.__repr__()
+
+
+class DirectorySet(FileSet):
+    def add(self, *args):
+        directories = self._process_str_paths(args)
+        directories = [directory for directory in directories if directory.is_dir()]
+
+        added = 0
+        for directory in directories:
+            if directory not in self._data:
+                self._data.append(directory)
+                added += 1
+
+        return added
+
+    def remove(self, *args):
+        directories = self._process_str_paths(args)
+        directories = [directory for directory in directories if directory.is_dir()]
+
+        removed = 0
+        for directory in directories:
+            if directory in self._data:
+                self._data.remove(directory)
+                removed += 1
+
+        return removed
