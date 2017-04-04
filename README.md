@@ -15,11 +15,32 @@ itself.
 
 Features are also in short supply, we'll see where this project goes.
 
+## Installing ##
+
+A very early version of ``setup.py`` is included in the repository. Simply run the script and
+it will set up pygrunt with all of its dependencies:
+
+``python setup.py``
+
+You can optionally add ``develop``. This way, the actual module will not be installed, instead
+a link will be created to its source, enabling you to work on the code while testing it.
+
+The setup will create a ``pygrunt`` command that you can call from your console.
+
 ## Usage ##
 
-Write a Python script that uses the pygrunt module and let it do the work. Currently, if all
-you need is to compile a bunch of source files and link them together, pygrunt should be fine.
-See the repo's root directory for examples. Here's a simple one:
+Projects that build with pygrunt provide a Python script, usually named after the project itself.
+An example project, called [GLWrap](https://github.com/elementbound/glwrap) is included in this
+repository. Its corresponding script is called ``glwrap.py``.
+
+To build GLWrap, type
+
+``pygrunt glwrap.py``
+
+To build your own project with pygrunt, write a Python script that uses the pygrunt module and
+let it do the work. Currently, if all you need is to compile a bunch of source files and link
+them together, pygrunt should be fine. See the repo's root directory for examples.
+Here's a simple one:
 
 ```python
 import pygrunt
@@ -52,14 +73,16 @@ Output:
 ```
 Looking for GCC on PATH...
 Found GCC at D:\dev\compilers\mingw\bin\gcc.exe
-Compiling compile-src/vecmath\main.c -> build/vecmath\main.o... success
-Compiling compile-src/vecmath\vector.c -> build/vecmath\vector.o... success
+Source directory is D:\dev\python\pygrunt\compile-src\vecmath
+Build directory is D:\dev\python\pygrunt\build
+[ 50%] Compiling main.c -> main.o
+[100%] Compiling vector.c -> vector.o
 Linking executable build/vecmath ...
 ```
 
 ## Dependencies ##
 
-[Colorama](https://pypi.python.org/pypi/colorama) is used for fancy, colored output. 
+[Colorama](https://pypi.python.org/pypi/colorama) is used for fancy, colored output.
 
 ## Todo ##
 
