@@ -1,10 +1,27 @@
-from style import Style
+from pygrunt.style import Style
 
-def run(file, target='build'):
+def run():
     import importlib
     import importlib.util
     import inspect
+    import sys
     from pathlib import Path
+
+    # Parse command line arguments
+    if len(sys.argv) < 2:
+        my_name = Path(sys.argv[0]).name
+        print('Usage:', my_name, 'file', '[target=build]')
+        return False
+
+    file = sys.argv[1]
+
+    target = 'build' if len(sys.argv) < 3 else sys.argv[2]
+
+    # Import file
+    path = Path(file)
+    if not path.is_file():
+        print(Style.error(path, "is not a file!"))
+        return False
 
     name = Path(file).with_suffix('')
     name = str(name)
@@ -12,6 +29,7 @@ def run(file, target='build'):
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
 
+    # Try to find and run a project
     try:
         build = getattr(module, target)
     except:
@@ -32,13 +50,3 @@ def run(file, target='build'):
         return False
 
     return run()
-
-if __name__ == '__main__':
-    import sys
-    import os
-
-    # Add current path to sys.path so pygrunt can be found
-    # TODO: Remove this once pygrunt becomes an actual package
-    sys.path.append(os.path.abspath(os.curdir))
-
-    run(*sys.argv[1:])
