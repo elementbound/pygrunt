@@ -23,6 +23,7 @@ See the repo's root directory for examples. Here's a simple one:
 
 ```python
 import pygrunt
+import pygrunt.compiler
 import platform
 
 def build():
@@ -38,7 +39,7 @@ def build():
     if platform.system() is not 'Windows':
         project.link('m')
 
-    cc = pygrunt.GCCCompiler()
+    cc = pygrunt.compiler.any()
     cc.optimize('size')
     cc.compile_project(project)
 

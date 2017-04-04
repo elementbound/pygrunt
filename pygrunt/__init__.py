@@ -1,5 +1,5 @@
 from .project import *
-from .compiler import *
+from .compiler import Compiler, GCCCompiler
 from .style import Style
 from .fileset import FileSet, DirectorySet
 

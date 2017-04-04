@@ -189,3 +189,17 @@ class GCCCompiler(Compiler):
         self._args.extend(self.unique_flags.values())
 
         return super().link_library(in_files, out_file+'.a')
+
+# Return a compiler from the list, don't care which
+def any_list(list):
+    for compiler in list:
+        try:
+            return compiler()
+        except CompilerNotFoundException:
+            pass
+
+    raise CompilerNotFoundException()
+
+# Return a compiler, don't care which
+def any():
+    return any_list([GCCCompiler])
