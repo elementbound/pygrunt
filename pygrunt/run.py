@@ -1,4 +1,4 @@
-from .style import Style
+from style import Style
 
 def run(file, target='build'):
     import importlib
@@ -30,3 +30,13 @@ def run(file, target='build'):
         print(Style.error('build attribute is (supposedly) a class but has no run method!'))
 
     return run()
+
+if __name__ == '__main__':
+    import sys
+    import os
+
+    # Add current path to sys.path so pygrunt can be found
+    # TODO: Remove this once pygrunt becomes an actual package
+    sys.path.append(os.path.abspath(os.curdir))
+
+    run(*sys.argv[1:])
