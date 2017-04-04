@@ -7,8 +7,8 @@ def main():
     project.type = 'library'
     project.sanitize()
 
-    project.add_sources('*.cpp')
-    project.add_sources('mesh/*.cpp')
+    project.sources.add('*.cpp')
+    project.sources.add('mesh/*.cpp')
 
     # The order of linked libraries is preserved
     # The same does not apply to source files

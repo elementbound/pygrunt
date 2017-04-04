@@ -5,10 +5,11 @@ def main():
     project = pygrunt.Project('vecmath')
     project.working_dir = 'compile-src/vecmath/'
     project.output_dir = 'build/'
+    project.sanitize()
 
     project.define('DEBUG')
     project.flag('Wall')
-    project.add_sources('*.c')
+    project.sources.add('*.c')
 
     if platform.system() is not 'Windows':
         project.link('m')

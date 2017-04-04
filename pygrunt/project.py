@@ -1,4 +1,5 @@
 import collections
+from pathlib import Path
 from .fileset import FileSet, DirectorySet
 
 class Project:
@@ -86,3 +87,5 @@ class Project:
 
         self.working_dir = os.path.realpath(self.working_dir)
         self.output_dir = os.path.realpath(self.output_dir)
+
+        self.sources.working_directory = Path(self.working_dir)

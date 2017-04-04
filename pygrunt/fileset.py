@@ -6,20 +6,20 @@ from glob import glob
 class FileSet:
     def __init__(self):
         self._data = []
+        self.working_directory = Path(os.curdir)
 
     def _process_str_paths(self, paths):
-        # TODO: Dies if a file doesn't exist 
+        # TODO: Dies if a file doesn't exist
         return [Path(file).resolve() for file in paths]
 
-    def _glob(pattern, recursive, cwd):
-        cwd = Path(cwd)
-        return cwd.glob(pattern, recursive=recursive)
+    def _glob(self, pattern):
+        return self.working_directory.glob(pattern)
 
-    def add(self, *args, recursive=False, cwd=os.curdir):
+    def add(self, *args):
         added = 0
 
         for pattern in args:
-            files = self._glob(pattern, recursive, cwd)
+            files = self._glob(pattern)
             files = self._process_str_paths(files)
 
             if not files:

@@ -69,7 +69,7 @@ class Compiler:
         additional_args.extend(self._build_includes(project.include_dirs))
 
         for idx, file in enumerate(project.sources):
-            in_file = os.path.realpath(file)
+            in_file = str(file) # os.path.realpath(file)
             in_file = os.path.relpath(in_file, project.working_dir)
 
             # TODO: Something that's not this dumb
@@ -88,7 +88,7 @@ class Compiler:
             print(Style.object('Compiling', in_file, '->', print_out))
 
             # Fail if one of the files doesn't compile
-            if not self.compile_object(file, out_file, additional_args=additional_args):
+            if not self.compile_object(str(file), out_file, additional_args=additional_args):
                 return False
 
             object_files.append(out_file)
