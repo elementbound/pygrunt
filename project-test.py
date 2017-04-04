@@ -1,7 +1,7 @@
 import pygrunt
 import platform
 
-def main():
+def build():
     project = pygrunt.Project('vecmath')
     project.working_dir = 'compile-src/vecmath/'
     project.output_dir = 'build/'
@@ -19,4 +19,4 @@ def main():
     cc.compile_project(project)
 
 if __name__ == '__main__':
-    main()
+    build()
