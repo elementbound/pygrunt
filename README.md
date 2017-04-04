@@ -9,7 +9,7 @@ move files around on the filesystem or handle command-line parameters.
 
 Since the project is a one-night experiment so far ( *a too long night...* ), it supports only
 MinGW ( currently called GCCCompiler, to be fixed in the future ) on Windows ( sloppy
-slash-handling ). However, pygrunt is designed compiler-independence in mind. It should
+slash-handling ). However, pygrunt is designed with compiler-independence in mind. It should
 be relatively easy to add support for other compilers, given enough knowledge about the compiler
 itself.
 
@@ -56,6 +56,10 @@ Compiling compile-src/vecmath\main.c -> build/vecmath\main.o... success
 Compiling compile-src/vecmath\vector.c -> build/vecmath\vector.o... success
 Linking executable build/vecmath ...
 ```
+
+## Dependencies ##
+
+[Colorama](https://pypi.python.org/pypi/colorama) is used for fancy, colored output. 
 
 ## Todo ##
 
