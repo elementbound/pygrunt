@@ -1,3 +1,3 @@
 [submodule "compile-src/glwrap"]
-	path = compile-src/glwrap
+	path = examples/glwrap/glwrap
 	url = https://github.com/elementbound/glwrap.git

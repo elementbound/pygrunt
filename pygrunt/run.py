@@ -5,6 +5,7 @@ def run():
     import importlib.util
     import inspect
     import sys
+    import os
     from pathlib import Path
 
     # Parse command line arguments
@@ -28,6 +29,9 @@ def run():
     spec = importlib.util.spec_from_file_location(name, file)
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
+
+    # Set working directory to file's parent
+    os.chdir(str(path.parent))
 
     # Try to find and run a project
     try:

@@ -4,7 +4,7 @@ import platform
 
 def build():
     project = pygrunt.Project('vecmath')
-    project.working_dir = 'compile-src/vecmath/'
+    project.working_dir = 'vecmath/'
     project.output_dir = 'build/'
     project.sanitize()
 
@@ -15,7 +15,7 @@ def build():
     if platform.system() is not 'Windows':
         project.link('m')
 
-    cc = pygrunt.compiler.any() 
+    cc = pygrunt.compiler.any()
     cc.optimize('size')
     cc.compile_project(project)
 
