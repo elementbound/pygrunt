@@ -24,7 +24,7 @@ appropriate directory.
 Projects would have different stages:
  1. **Gather** - add source files and other dependencies  
  2. **Validate** - check dependencies, do other validations
- 3. **Preprocess** - configure headers, generate code as necessary 
+ 3. **Preprocess** - configure headers, generate code as necessary
  4. **Compile** - produce binary
  5. **Install** - optional, copy the resulting binary to compiler or to user-supplied location
 
@@ -57,3 +57,17 @@ a project:
 py glwrap.py
 pygrunt glwrap
 ```
+
+## Platforms ##
+
+Add a platform module, with a base class and separate subclasses for supported platforms. These
+platforms would have class methods, firstly to see if the actual platform is the current one.
+Other platform-specific functionality could go here as we go on.
+
+The main idea is to replace
+
+``if platform.system() is not 'Windows'``
+
+with
+
+``if not pygrunt.platform.Windows(): ``
