@@ -1,9 +1,12 @@
 from .style import Style
+import pygrunt.recompile as recompile
 
 class Compiler:
     def __init__(self):
         self.executable_path = None
         self.unique_flags = {}
+
+        self.recompile = recompile.PreprocessHash(self)
 
     def _build_defs(self, definitions):
         pass
@@ -20,11 +23,37 @@ class Compiler:
     def _build_includes(self, includes):
         pass
 
-    def compile_object(self, in_file, out_file, print_name=None, additional_args=[]):
+    def preprocess_source(self, in_file, additional_args=[]):
         import subprocess
 
-        if print_name is None:
-            print_name = in_file
+        self._args.extend(self._build_unique_flags())
+        self._args.extend(additional_args)
+
+        result = subprocess.run(self._args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
+
+        if result.returncode == 0:
+            return result.stdout
+        else:
+            if result.stderr:
+                Style.error('Preprocess failed: ')
+                print(result.stderr)
+
+            return None
+
+    def compile_object(self, in_file, out_file, print_name=None, additional_args=[]):
+        import subprocess
+        import os.path
+
+        # Skip compile if RecompileStrategy says so
+        # Since preprocess_source ( possibly used by recompile ) also modifies self._args,
+        # we gotta back it up
+        # TODO: Maybe use something more elegant than self._args?
+        old_args = self._args
+        if os.path.isfile(out_file):
+            if not self.recompile.should_recompile(in_file):
+                print('Nothing to do with', in_file)
+                return True
+        self._args = old_args
 
         self._args.extend(self._build_unique_flags())
         self._args.extend(additional_args)
@@ -61,6 +90,9 @@ class Compiler:
         print('Source directory is', project.working_dir)
         print('Build directory is', project.output_dir)
 
+        # Try loading cache for self.recompile
+        self.recompile.load_cache(os.path.join(project.output_dir, 'recompile.cache'))
+
         # Go through each source file and then link them
         object_files = []
         additional_args = self._build_defs(project.definitions)
@@ -93,6 +125,9 @@ class Compiler:
             object_files.append(out_file)
 
         object_files.extend(self._build_library_links(project.libraries))
+
+        # Save compile cache
+        self.recompile.save_cache(os.path.join(project.output_dir, 'recompile.cache'))
 
         # Produce executable
         if project.type == 'executable':
@@ -168,6 +203,10 @@ class GCCCompiler(Compiler):
             del self.unique_flags['std']
         else:
             self.unique_flags['std'] = '-std='+std
+
+    def preprocess_source(self, in_file, additional_args=[]):
+        self._args = [self.executable_path, '-E', in_file]
+        return super().preprocess_source(in_file, additional_args)
 
     def compile_object(self, in_file, out_file, print_name=None, additional_args=[]):
         self._args = [self.executable_path, '-c', in_file, '-o', out_file]
