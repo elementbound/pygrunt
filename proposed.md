@@ -78,3 +78,34 @@ The main idea is to replace
 with
 
 ``if not pygrunt.platform.Windows(): ``
+
+## Templating ##
+
+Templating is a bit out of scope for this project. There are other libraries to do that ( see
+[Jinja](http://jinja.pocoo.org/) ). These libraries could very well be used in Project's
+*preprocess* stage.
+
+However, CMake also has its own 'templating' with its configure step. A simple class could
+be added to support porting from CMake.
+
+## Options ##
+
+Also a feature heavily inspired by CMake.
+
+Each project could define several options of various kinds, each with reasonable defaults.
+When running the script, a command line argument could be passed to skip the entire options
+prompt and just use defaults.
+
+Otherwise, a simple console prompt could be presented to the user to manage settings.
+
+### Integrated or separate UI? ###
+
+Writing a prompt as a GUI application or as a console form is a whole project in itself.
+To be able to use external tools to configure, pygrunt needs to expose all the options, their
+types and defaults. This could easily be done by a command line switch.
+
+After the actual config step, the options would be saved to a previously agreed-upon location,
+so pygrunt can use it in the build step.
+
+The separate UI would also mean that by default pygrunt will not prompt the user for options,
+it will use the defaults instead. 
