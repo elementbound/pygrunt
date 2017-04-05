@@ -26,6 +26,13 @@ a link will be created to its source, enabling you to work on the code while tes
 
 The setup will create a ``pygrunt`` command that you can call from your console.
 
+> Since the project uses other git repos as examples, you might need to run
+
+> ``git submodule update --init --recursive``
+
+> after cloning.
+> This will clone all the submodules so the examples have actual sources to build. 
+
 ## Usage ##
 
 Projects that build with pygrunt provide a Python script, usually named after the project itself.
@@ -34,7 +41,7 @@ repository. Its corresponding script is called ``glwrap.py``.
 
 To build GLWrap, type
 
-``pygrunt glwrap.py``
+``pygrunt examples/glwrap.py``
 
 To build your own project with pygrunt, write a Python script that uses the pygrunt module and
 let it do the work. Currently, if all you need is to compile a bunch of source files and link

@@ -1,3 +1,6 @@
 [submodule "compile-src/glwrap"]
-	path = examples/glwrap/glwrap
+	path = examples/glwrap
 	url = https://github.com/elementbound/glwrap.git
+[submodule "examples/pcm-to-wav"]
+	path = examples/pcm-to-wav
+	url = https://github.com/spacive/pcm-to-wav.git
