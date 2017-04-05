@@ -2,6 +2,8 @@
 
 ## FileSets ##
 
+> This feature has been added before v0.0.30
+
 These would act pretty much like lists, except a bit more clever and specialized for files. You
 can index and iterate them the same way. FileSets store Path objects, have `add` and `remove`
 methods to manipulate contents and don't store the same file twice. Also, important, they are
@@ -13,6 +15,9 @@ These classes would be used in the Project class to store source files, include-
 directories.
 
 ## Projects ##
+
+> This feature has been added before v0.0.30
+> Note: this doesn't include compound projects
 
 Instead of writing a function to build the whole project, the Project class could do this
 in a smarter way.
@@ -43,6 +48,8 @@ way, for example if two projects share source files, don't compile those twice.
 The CompoundProject would maintain an **ordered** list of Projects to run.
 
 ### Running pygrunt scripts ###
+
+> This feature has been added before v0.0.30
 
 Not sure how would this be useful, but a runner function might be fun.
 
