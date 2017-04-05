@@ -132,7 +132,7 @@ class Compiler:
         # Produce executable
         if project.type == 'executable':
             self.link_executable(object_files, project.executable)
-        elif project.type == 'library':
+        elif project.type == 'library' or project.type == 'shared':
             self.link_library(object_files, project.executable)
         else:
             Style.error('Can\'t produce', project.type)
@@ -223,10 +223,10 @@ class GCCCompiler(Compiler):
     def link_library(self, in_files, out_file):
         self._args = [self.executable_path, '-shared']
         self._args.extend(in_files)
-        self._args.extend(['-o', out_file+'.a'])
+        self._args.extend(['-o', out_file])
         self._args.extend(self.unique_flags.values())
 
-        return super().link_library(in_files, out_file+'.a')
+        return super().link_library(in_files, out_file)
 
 # Return a compiler from the list, don't care which
 def any_list(list):
