@@ -9,6 +9,8 @@ class PCMtoWAV(pygrunt.Project):
         self.output_dir = 'build/'
         self.sanitize()
 
+        self.compiler = pygrunt.compiler.any()
+
     def gather(self):
         self.sources.add('*.c')
 
@@ -17,9 +19,8 @@ class PCMtoWAV(pygrunt.Project):
         self.define('M_PI', '3.14159265358979323846264338327950288')
 
     def compile(self):
-        cc = pygrunt.compiler.any()
-        cc.standard('c11')
-        cc.optimize('more')
-        cc.compile_project(self)
+        self.compiler.standard('c11')
+        self.compiler.optimize('more')
+        self.compiler.compile_project(self)
 
 build = PCMtoWAV

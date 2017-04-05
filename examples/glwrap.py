@@ -8,7 +8,7 @@ class GLWrap(pygrunt.Project):
         self.type = 'library'
         self.sanitize()
 
-        self.cc = pygrunt.GCCCompiler(cpp=True)
+        self.compiler = pygrunt.GCCCompiler(cpp=True)
 
     def gather(self):
         self.sources.add('*.cpp')
@@ -19,8 +19,8 @@ class GLWrap(pygrunt.Project):
         self.link('glfw3', 'gdi32', 'opengl32', 'glew32', 'png', 'z')
 
     def compile(self):
-        self.cc.optimize('more')
-        self.cc.standard('c++11')
-        self.cc.compile_project(self)
+        self.compiler.optimize('more')
+        self.compiler.standard('c++11')
+        self.compiler.compile_project(self)
 
 build = GLWrap()

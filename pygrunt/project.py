@@ -97,6 +97,27 @@ class Project(BarebonesProject):
             if  getattr(self.__class__, name) == getattr(Project, name):
                 self.stages.remove(stage)
 
+    def run(self):
+        Style.title('Building', self.name)
+
+        for idx, stage in enumerate(self.stages):
+            Style.title('[{0}/{1}]'.format(idx+1, len(self.stages)), 'Running stage', stage.__name__)
+
+            # Additional behaviour here...
+            # TODO: Solve this in a much less hacky way
+            if stage.__name__ == 'compile':
+                cachefile = str(Path(self.output_dir, 'recompile.cache'))
+
+                # Try loading recompile cache
+                self.compiler.recompile.load_cache(cachefile)
+
+                stage()
+
+                # Save recompile cache
+                self.compiler.recompile.save_cache(cachefile)
+            else:
+                stage()
+
     # Stages:
     def init(self):
         pass
