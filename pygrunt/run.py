@@ -21,7 +21,7 @@ def run():
     # Import file
     path = Path(file)
     if not path.is_file():
-        print(Style.error(path, "is not a file!"))
+        Style.error(path, "is not a file!")
         return False
 
     name = Path(file).with_suffix('')
@@ -37,7 +37,7 @@ def run():
     try:
         build = getattr(module, target)
     except:
-        print(Style.error('{project} has no {target} attribute!'.format(project=name, target=target)))
+        Style.error('{project} has no {target} attribute!'.format(project=name, target=target))
         return False
 
     if inspect.isfunction(build):
@@ -50,7 +50,7 @@ def run():
     try:
         run = getattr(build, 'run')
     except:
-        print(Style.error('build attribute is (supposedly) a class but has no run method!'))
+        Style.error('build attribute is (supposedly) a class but has no run method!')
         return False
 
     return run()

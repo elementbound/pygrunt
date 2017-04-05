@@ -71,10 +71,10 @@ class BarebonesProject:
         self.sources.working_directory = Path(self.working_dir)
 
     def run(self):
-        print(Style.title('Building', self.name))
+        Style.title('Building', self.name)
 
         for idx, stage in enumerate(self.stages):
-            print(Style.title('[{0}/{1}]'.format(idx+1, len(self.stages)), 'Running stage', stage.__name__))
+            Style.title('[{0}/{1}]'.format(idx+1, len(self.stages)), 'Running stage', stage.__name__)
             stage()
 
 

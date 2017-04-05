@@ -26,7 +26,6 @@ class Compiler:
         if print_name is None:
             print_name = in_file
 
-        #print(Style.object('Compiling', print_name, '->', out_file, '... '))
         self._args.extend(self._build_unique_flags())
         self._args.extend(additional_args)
         result = subprocess.run(self._args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
@@ -43,14 +42,14 @@ class Compiler:
     def link_executable(self, in_files, out_file):
         import subprocess
 
-        print(Style.link('Linking executable', out_file, '... '))
+        Style.link('Linking executable', out_file, '... ')
         result = subprocess.run(self._args)
         return result.returncode == 0
 
     def link_library(self, in_files, out_file):
         import subprocess
 
-        print(Style.link('Linking library', out_file))
+        Style.link('Linking library', out_file)
         result = subprocess.run(self._args)
         return result.returncode == 0
 
@@ -85,7 +84,7 @@ class Compiler:
             print_in = in_file
             print_out = os.path.relpath(out_file, project.output_dir)
             print('[{0:3.0f}%]'.format((idx+1)/len(project.sources)*100), end=' ')
-            print(Style.object('Compiling', in_file, '->', print_out))
+            Style.object('Compiling', in_file, '->', print_out)
 
             # Fail if one of the files doesn't compile
             if not self.compile_object(str(file), out_file, additional_args=additional_args):
@@ -101,7 +100,7 @@ class Compiler:
         elif project.type == 'library':
             self.link_library(object_files, project.executable)
         else:
-            print('Can\'t produce', project.type)
+            Style.error('Can\'t produce', project.type)
 
 class CompilerNotFoundException(Exception):
     pass

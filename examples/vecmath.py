@@ -18,6 +18,3 @@ def build():
     cc = pygrunt.compiler.any()
     cc.optimize('size')
     cc.compile_project(project)
-
-if __name__ == '__main__':
-    build()
