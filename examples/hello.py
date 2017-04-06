@@ -16,5 +16,7 @@ def build():
     project.sources.add('*.c')
 
     # Compile the whole thing
-    project.compiler = pygrunt.compiler.any()
-    project.compile()
+    #project.compiler = pygrunt.compiler.any()
+    #project.compile()
+    cc = pygrunt.compiler.any()
+    cc.compile_project(project)

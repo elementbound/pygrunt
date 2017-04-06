@@ -8,15 +8,14 @@ def build():
     project.output_dir = 'build/'
     project.sanitize()
 
-    project.define('DEBUG')
-    project.flag('Wall')
+    cc = project.compiler = pygrunt.compiler.any()
+
     project.sources.add('*.c')
-
-    if not pygrunt.platform.Windows():
-        project.link('m')
-
-    cc = pygrunt.compiler.any()
+    cc.define('DEBUG')
+    cc.flag('Wall')
     cc.optimize('size')
 
-    project.compiler = cc
+    if not pygrunt.platform.Windows():
+        cc.link('m')
+
     project.compile()

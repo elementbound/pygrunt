@@ -16,7 +16,7 @@ class PCMtoWAV(pygrunt.Project):
 
         # M_PI is not defined in standard, so also define that
         # TODO: check from compiler if it needs to be defined
-        self.define('M_PI', '3.14159265358979323846264338327950288')
+        self.compiler.define('M_PI', '3.14159265358979323846264338327950288')
 
     def compile(self):
         self.compiler.standard('c11')

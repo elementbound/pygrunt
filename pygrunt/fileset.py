@@ -51,6 +51,9 @@ class FileSet:
 
         return removed
 
+    def strings(self):
+        return [str(file) for file in self._data]
+
     def __len__(self):
         return self._data.__len__()
 

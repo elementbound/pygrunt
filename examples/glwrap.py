@@ -15,7 +15,7 @@ class GLWrap(pygrunt.Project):
 
         # The order of linked libraries is preserved
         # The same does not apply to source files
-        self.link('glfw3', 'gdi32', 'opengl32', 'glew32', 'png', 'z')
+        self.compiler.link('glfw3', 'gdi32', 'opengl32', 'glew32', 'png', 'z')
 
     def compile(self):
         self.compiler.optimize('more')

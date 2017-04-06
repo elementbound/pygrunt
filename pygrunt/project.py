@@ -1,4 +1,3 @@
-import collections
 from pathlib import Path
 from .style import Style
 from .fileset import FileSet, DirectorySet
@@ -9,11 +8,7 @@ class BarebonesProject:
         self.name = name if name is not None else self.__class__.__name__
 
         self.sources = FileSet()
-        self.definitions = {}
-        self.flags = {}
-        self.include_dirs = DirectorySet()
-        self.linker_flags = []
-        self.libraries = collections.OrderedDict()
+
         self.working_dir = None
         self.output_dir = None
 
@@ -21,29 +16,6 @@ class BarebonesProject:
         self.type = 'executable'
 
         self.stages = []
-
-    # Defines
-    def define(self, name, value=None):
-        self.definitions[name] = value
-
-    def undefine(self, name):
-        del self.definitions[name]
-
-    # Compiler flags
-    def flag(self, flag):
-        self.flags[flag] = True
-
-    def unflag(self, flag):
-        del self.flags[flag]
-
-    # Libraries to link
-    def link(self, *args):
-        for library in args:
-            self.libraries[library] = True
-
-    def unlink(self, *args):
-        for library in args:
-            del self.libraryies[library]
 
     # Set some sane defaults
     def sanitize(self):
@@ -182,11 +154,6 @@ class Project(BarebonesProject):
         # Go through each source file and then link them
         object_files = []
 
-        # TODO: compiler flags from project?
-        additional_args = cc._build_defs(self.definitions)
-        additional_args.extend(cc._build_flags(self.flags))
-        additional_args.extend(cc._build_includes(self.include_dirs))
-
         for idx, file in enumerate(self.sources):
             # TODO: pathlib.Path instead of os.path
             in_file = str(file)
@@ -207,13 +174,10 @@ class Project(BarebonesProject):
             Style.object('Compiling', in_file, '->', print_out)
 
             # Fail if one of the files doesn't compile
-            if not cc.compile_object(str(file), out_file, additional_args=additional_args):
+            if not cc.compile_object(str(file), out_file):
                 return False
 
             object_files.append(out_file)
-
-        # TODO: Linker flags from project?
-        object_files.extend(cc._build_library_links(self.libraries))
 
         # Save compile cache
         cc.recompile.save_cache(os.path.join(self.output_dir, 'recompile.cache'))

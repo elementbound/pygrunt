@@ -1,16 +1,25 @@
 from .style import Style
+from .fileset import FileSet, DirectorySet
 import pygrunt.recompile as recompile
 import pygrunt.platform as platform
+import collections
 
 class Compiler:
     def __init__(self):
         self.executable_path = None
+
+        self.definitions = {}
+        self.flags = {}
+        self.include_dirs = DirectorySet()
+        self.linker_flags = []
+        self.libraries = collections.OrderedDict()
+
         self.unique_flags = {}
 
         self.recompile = recompile.PreprocessHash(self)
 
     def _build_defs(self, definitions):
-        pass
+        raise NotImplementedError()
 
     def _build_flags(self, flags):
         return ['-'+f for f in flags]
@@ -19,11 +28,54 @@ class Compiler:
         return [value for value in self.unique_flags.values() if value is not None]
 
     def _build_library_links(self, libs):
-        pass
+        raise NotImplementedError()
+
+    def _build_user_linker_flags(self, flags):
+        return self._build_flags(flags)
 
     def _build_includes(self, includes):
-        pass
+        raise NotImplementedError()
 
+    def _build_compiler_flags(self):
+        flags = self._build_defs(self.definitions)
+        flags.extend(self._build_flags(self.flags))
+        flags.extend(self._build_unique_flags())
+        flags.extend(self._build_includes(self.include_dirs.strings()))
+
+        return flags
+
+    def _build_linker_flags(self):
+        flags = self._build_flags(self.flags) # These flags could also concern the linker
+        flags.extend(self._build_unique_flags()) # These too
+        flags.extend(self._build_user_linker_flags(self.linker_flags))
+        flags.extend(self._build_library_links(self.libraries))
+
+        return flags
+
+    # Defines
+    def define(self, name, value=None):
+        self.definitions[name] = value
+
+    def undefine(self, name):
+        del self.definitions[name]
+
+    # Compiler flags
+    def flag(self, flag):
+        self.flags[flag] = True
+
+    def unflag(self, flag):
+        del self.flags[flag]
+
+    # Libraries to link
+    def link(self, *args):
+        for library in args:
+            self.libraries[library] = True
+
+    def unlink(self, *args):
+        for library in args:
+            del self.libraries[library]
+
+    # Operations
     def preprocess_source(self, in_file, additional_args=[]):
         import subprocess
 
@@ -41,7 +93,7 @@ class Compiler:
 
             return None
 
-    def compile_object(self, in_file, out_file, print_name=None, additional_args=[]):
+    def compile_object(self, in_file, out_file):
         import subprocess
         import os.path
 
@@ -52,12 +104,11 @@ class Compiler:
         old_args = self._args
         if os.path.isfile(out_file):
             if not self.recompile.should_recompile(in_file):
-                print('Nothing to do with', in_file)
+                Style.info('Nothing to do with', in_file)
                 return True
         self._args = old_args
 
-        self._args.extend(self._build_unique_flags())
-        self._args.extend(additional_args)
+        self._args.extend(self._build_compiler_flags())
         result = subprocess.run(self._args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
 
         # TODO: do something useful with output
@@ -73,6 +124,7 @@ class Compiler:
         import subprocess
 
         Style.link('Linking executable', out_file, '... ')
+        self._args.extend(self._build_linker_flags())
         result = subprocess.run(self._args)
         return result.returncode == 0
 
@@ -80,62 +132,14 @@ class Compiler:
         import subprocess
 
         Style.link('Linking library', out_file)
+        self._args.extend(self._build_linker_flags())
         result = subprocess.run(self._args)
         return result.returncode == 0
 
     def compile_project(self, project):
-        import os.path
-
-        project.sanitize()
-
-        print('Source directory is', project.working_dir)
-        print('Build directory is', project.output_dir)
-
-        # Try loading cache for self.recompile
-        self.recompile.load_cache(os.path.join(project.output_dir, 'recompile.cache'))
-
-        # Go through each source file and then link them
-        object_files = []
-        additional_args = self._build_defs(project.definitions)
-        additional_args.extend(self._build_flags(project.flags))
-        additional_args.extend(self._build_includes(project.include_dirs))
-
-        for idx, file in enumerate(project.sources):
-            in_file = str(file) # os.path.realpath(file)
-            in_file = os.path.relpath(in_file, project.working_dir)
-
-            out_file = os.path.join(project.output_dir, in_file)
-            out_file = platform.current.as_object(out_file)
-            out_dir = os.path.dirname(out_file)
-
-            # Create path for output file if it does not exist
-            if not os.path.exists(out_dir):
-                os.makedirs(out_dir)
-
-            # Print what's happening
-            print_in = in_file
-            print_out = os.path.relpath(out_file, project.output_dir)
-            print('[{0:3.0f}%]'.format((idx+1)/len(project.sources)*100), end=' ')
-            Style.object('Compiling', in_file, '->', print_out)
-
-            # Fail if one of the files doesn't compile
-            if not self.compile_object(str(file), out_file, additional_args=additional_args):
-                return False
-
-            object_files.append(out_file)
-
-        object_files.extend(self._build_library_links(project.libraries))
-
-        # Save compile cache
-        self.recompile.save_cache(os.path.join(project.output_dir, 'recompile.cache'))
-
-        # Produce executable
-        if project.type == 'executable':
-            self.link_executable(object_files, project.executable)
-        elif project.type == 'library' or project.type == 'shared':
-            self.link_library(object_files, project.executable)
-        else:
-            Style.error('Can\'t produce', project.type)
+        Style.warning('Compiler.compile_project() is deprecated! Use Project.compile() instead.')
+        project.compiler = self
+        return project.compile()
 
 class CompilerNotFoundException(Exception):
     pass
@@ -205,9 +209,9 @@ class GCCCompiler(Compiler):
         self._args = [self.executable_path, '-E', in_file]
         return super().preprocess_source(in_file, additional_args)
 
-    def compile_object(self, in_file, out_file, print_name=None, additional_args=[]):
+    def compile_object(self, in_file, out_file):
         self._args = [self.executable_path, '-c', in_file, '-o', out_file]
-        return super().compile_object(in_file, out_file, print_name, additional_args)
+        return super().compile_object(in_file, out_file)
 
     def link_executable(self, in_files, out_file):
         self._args = [self.executable_path]
