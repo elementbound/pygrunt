@@ -45,7 +45,7 @@ Optionally, hooks could be added to the project's stages. These are basically Py
 they get the stage function and get called instead of the actual stage.
 
 This is an easy way to hook into the gather stage and sanitize, or hook into the compile stage
-and load/save the recompile cache as necessary. 
+and load/save the recompile cache as necessary.
 
 ### Compound Projects ###
 
@@ -75,6 +75,8 @@ pygrunt glwrap
 
 ## Platforms ##
 
+> This feature was added in 0.2.0
+
 Add a platform module, with a base class and separate subclasses for supported platforms. These
 platforms would have class methods, firstly to see if the actual platform is the current one.
 Other platform-specific functionality could go here as we go on.
@@ -86,6 +88,9 @@ The main idea is to replace
 with
 
 ``if not pygrunt.platform.Windows(): ``
+
+The platform classes would also provide help with file name formatting and other system-specific
+operations ( like querying path, or possibly even looking up executables on the system )
 
 ## Templating ##
 
