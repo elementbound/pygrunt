@@ -20,6 +20,6 @@ class GLWrap(pygrunt.Project):
     def compile(self):
         self.compiler.optimize('more')
         self.compiler.standard('c++11')
-        self.compiler.compile_project(self)
+        super().compile()
 
 build = GLWrap()

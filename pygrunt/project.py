@@ -164,7 +164,67 @@ class Project(BarebonesProject):
         pass
 
     def compile(self):
-        pass
+        import os.path
+
+        if self.compiler is None:
+            Style.error('No compiler to use!')
+            return False
+
+        self.sanitize()
+        cc = self.compiler
+
+        Style.info('Source directory is', self.working_dir)
+        Style.info('Build directory is', self.output_dir)
+
+        # Try loading cache for self.recompile
+        cc.recompile.load_cache(os.path.join(self.output_dir, 'recompile.cache'))
+
+        # Go through each source file and then link them
+        object_files = []
+
+        # TODO: compiler flags from project?
+        additional_args = cc._build_defs(self.definitions)
+        additional_args.extend(cc._build_flags(self.flags))
+        additional_args.extend(cc._build_includes(self.include_dirs))
+
+        for idx, file in enumerate(self.sources):
+            # TODO: pathlib.Path instead of os.path
+            in_file = str(file)
+            in_file = os.path.relpath(in_file, self.working_dir)
+
+            out_file = os.path.join(self.output_dir, in_file)
+            out_file = platform.current.as_object(out_file)
+            out_dir = os.path.dirname(out_file)
+
+            # Create path for output file if it does not exist
+            if not os.path.exists(out_dir):
+                os.makedirs(out_dir)
+
+            # Print what's happening
+            print_in = in_file
+            print_out = os.path.relpath(out_file, self.output_dir)
+            print('[{0:3.0f}%]'.format((idx+1)/len(self.sources)*100), end=' ')
+            Style.object('Compiling', in_file, '->', print_out)
+
+            # Fail if one of the files doesn't compile
+            if not cc.compile_object(str(file), out_file, additional_args=additional_args):
+                return False
+
+            object_files.append(out_file)
+
+        # TODO: Linker flags from project?
+        object_files.extend(cc._build_library_links(self.libraries))
+
+        # Save compile cache
+        cc.recompile.save_cache(os.path.join(self.output_dir, 'recompile.cache'))
+
+        # Produce executable
+        if self.type == 'executable':
+            cc.link_executable(object_files, self.executable)
+        elif self.type == 'library' or self.type == 'shared':
+            cc.link_library(object_files, self.executable)
+        else:
+            Style.error('Can\'t produce', self.type)
 
     def install(self):
         pass

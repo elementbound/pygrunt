@@ -17,4 +17,6 @@ def build():
 
     cc = pygrunt.compiler.any()
     cc.optimize('size')
-    cc.compile_project(project)
+
+    project.compiler = cc
+    project.compile()

@@ -40,12 +40,17 @@ class Style:
     @staticmethod
     @_prefix_print
     def error(*args, sep=' ', end=''):
-        return colorama.Fore.RED
+        return colorama.Fore.RED + '[ERROR] ' + colorama.Style.RESET_ALL
 
     @staticmethod
     @_prefix_print
     def warning(*args, sep=' ', end=''):
-        return colorama.Fore.YELLOW
+        return colorama.Fore.YELLOW + colorama.Style.BRIGHT + '[WARN] ' + colorama.Style.RESET_ALL
+
+    @staticmethod
+    @_prefix_print
+    def info(*args, sep=' ', end=''):
+        return colorama.Style.BRIGHT + '[INFO] ' + colorama.Style.RESET_ALL
 
     @staticmethod
     @_prefix_print

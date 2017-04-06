@@ -21,6 +21,6 @@ class PCMtoWAV(pygrunt.Project):
     def compile(self):
         self.compiler.standard('c11')
         self.compiler.optimize('more')
-        self.compiler.compile_project(self)
+        super().compile()
 
 build = PCMtoWAV
