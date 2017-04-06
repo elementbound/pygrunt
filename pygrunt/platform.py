@@ -2,6 +2,8 @@ import os
 from pathlib import Path
 
 class Platform:
+    vagueness = 32768
+
     def __init__(self):
         self._bool = self.__class__.check()
 
@@ -28,7 +30,12 @@ class Platform:
     def path():
         return os.environ['PATH'].split(os.pathsep)
 
+class Unknown(Platform):
+    pass
+
 class Windows(Platform):
+    vagueness = 0
+
     def check():
         import platform
         return platform.system() == 'Windows'
@@ -53,6 +60,8 @@ class Windows(Platform):
 
 # NOTE: I might be wrong on these, needs some actual testing
 class Linux(Platform):
+    vagueness = 4
+
     def check():
         import platform
         return platform.system() == 'Linux'
@@ -75,9 +84,15 @@ class Linux(Platform):
 
         return str(p.with_suffix('.so'))
 
-current = None
-known_platforms = [Windows, Linux]
-for platform in known_platforms:
-    if platform():
-        current = platform
-        break
+def find_current():
+    known_platforms = [Windows, Linux]
+    best_match = Unknown
+
+    for platform in known_platforms:
+        if platform():
+            if platform.vagueness < best_match.vagueness:
+                best_match = platform
+
+    return best_match
+
+current = find_current()
