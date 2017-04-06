@@ -18,5 +18,5 @@ def build():
     # Compile the whole thing
     #project.compiler = pygrunt.compiler.any()
     #project.compile()
-    cc = pygrunt.compiler.any()
-    cc.compile_project(project)
+    project.compiler = pygrunt.compiler.any()
+    project.compile()
