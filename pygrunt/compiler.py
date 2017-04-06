@@ -183,7 +183,7 @@ class GCCCompiler(Compiler):
             'none': '-O0',
             'optimize': '-O1',
             'more': '-O2',
-            'evenmore': '-O3',
+            'most': '-O3',
             'size': '-Os',
             'debug': '-Og',
             'fast': '-Ofast'
