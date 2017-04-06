@@ -1,5 +1,6 @@
 from .style import Style
 import pygrunt.recompile as recompile
+import pygrunt.platform as platform
 
 class Compiler:
     def __init__(self):
@@ -103,9 +104,8 @@ class Compiler:
             in_file = str(file) # os.path.realpath(file)
             in_file = os.path.relpath(in_file, project.working_dir)
 
-            # TODO: Something that's not this dumb
             out_file = os.path.join(project.output_dir, in_file)
-            out_file = os.path.splitext(out_file)[0] + '.o'
+            out_file = platform.current.as_object(out_file)
             out_dir = os.path.dirname(out_file)
 
             # Create path for output file if it does not exist
@@ -143,19 +143,16 @@ class CompilerNotFoundException(Exception):
 class GCCCompiler(Compiler):
     def __init__(self, executable_path=None, cpp=False):
         import os
-        import platform
 
         super().__init__()
 
         self.executable_path = executable_path
         if self.executable_path is None:
             # Look for GCC in path
-            path = os.environ['PATH']
-            path = path.split(os.pathsep)
+            path = platform.current.path()
 
             compiler_name = 'g++' if cpp else 'gcc'
-            if platform.system() == 'Windows':
-                compiler_name += '.exe'
+            compiler_name = platform.current.as_executable(compiler_name)
 
             print('Looking for GCC on PATH... ')
             for dir in path:

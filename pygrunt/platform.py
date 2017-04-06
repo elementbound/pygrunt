@@ -27,6 +27,10 @@ class Platform:
         raise NotImplementedError()
 
     @staticmethod
+    def as_object(file):
+        return str(Path(file).with_suffix('.o'))
+
+    @staticmethod
     def path():
         return os.environ['PATH'].split(os.pathsep)
 

@@ -2,6 +2,7 @@ import collections
 from pathlib import Path
 from .style import Style
 from .fileset import FileSet, DirectorySet
+import pygrunt.platform as platform
 
 class BarebonesProject:
     def __init__(self, name=None):
@@ -47,7 +48,6 @@ class BarebonesProject:
     # Set some sane defaults
     def sanitize(self):
         import os.path
-        import platform
 
         if not self.working_dir:
             self.working_dir = os.path.curdir
@@ -58,24 +58,20 @@ class BarebonesProject:
         allowed_types = ['executable', 'library', 'shared']
         if self.type not in allowed_types:
             # TODO: exceptions?
-            print('Invalid output type:', self.type)
-            print('Allowed types:', allowed_types)
+            Style.error('Invalid output type:', self.type)
+            Style.error('Allowed types:', allowed_types)
             self.type = allowed_types[0]
-            print('Reverting to', self.type)
+            Style.error('Reverting to', self.type)
 
         if not self.executable:
-            if self.type == 'executable':
-                if platform.system() == 'Windows':
-                    self.executable = os.path.join(self.output_dir, self.name+'.exe')
-                else:
-                    self.executable = os.path.join(self.output_dir, self.name)
-            elif self.type == 'library':
-                self.executable = os.path.join(self.output_dir, 'lib'+self.name.lower()+'.a')
-            elif self.type == 'shared':
-                if platform.system() == 'Windows':
-                    self.executable = os.path.join(self.output_dir, 'lib'+self.name.lower()+'.dll')
-                else:
-                    self.executable = os.path.join(self.output_dir, 'lib'+self.name.lower()+'.so')
+            self.executable = os.path.join(self.output_dir, self.name)
+
+        if self.type == 'executable':
+            self.executable = platform.current.as_executable(self.executable)
+        elif self.type == 'library':
+            self.executable = platform.current.as_static_library(self.executable)
+        elif self.type == 'shared':
+            self.executable = platform.current.as_shared_library(self.executable)
 
         self.working_dir = os.path.realpath(self.working_dir)
         self.output_dir = os.path.realpath(self.output_dir)
@@ -105,7 +101,7 @@ class Project(BarebonesProject):
 
         # Check if the class we are initializing is overridden
         # If it's not, a simple build function is used to build the project, thus no need to
-        # filter stages and warn about them 
+        # filter stages and warn about them
         if self.__class__ == __class__:
             return
 

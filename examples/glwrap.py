@@ -4,7 +4,6 @@ class GLWrap(pygrunt.Project):
     def init(self):
         self.working_dir = 'glwrap/'
         self.output_dir = 'build/'
-        self.executable = 'build/libglwrap'
         self.type = 'library'
         self.sanitize()
 
