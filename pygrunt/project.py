@@ -103,6 +103,12 @@ class Project(BarebonesProject):
             self.install
         ]
 
+        # Check if the class we are initializing is overridden
+        # If it's not, a simple build function is used to build the project, thus no need to
+        # filter stages and warn about them 
+        if self.__class__ == __class__:
+            return
+
         # Stages that can be absent
         optional_stages = ['validate', 'preprocess', 'install']
 
@@ -123,7 +129,7 @@ class Project(BarebonesProject):
                 if stage.__name__ in optional_stages:
                     continue
 
-                # Non-optional empty stages should be overridden though 
+                # Non-optional empty stages should be overridden though
                 if stage.__name__ in empty_stages:
                     Style.warning('Stage', stage.__name__, 'is empty. Did you forget to override it?')
 

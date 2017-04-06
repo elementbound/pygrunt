@@ -1,6 +1,6 @@
 import pygrunt
 import pygrunt.compiler
-import platform
+import pygrunt.platform
 
 def build():
     project = pygrunt.Project('vecmath')
@@ -12,7 +12,7 @@ def build():
     project.flag('Wall')
     project.sources.add('*.c')
 
-    if platform.system() is not 'Windows':
+    if not pygrunt.platform.Windows():
         project.link('m')
 
     cc = pygrunt.compiler.any()
