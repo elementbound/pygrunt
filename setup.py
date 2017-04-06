@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="pygrunt",
-    version="0.1.3",
+    version="0.2.0dev0",
     packages=find_packages(),
 
     install_requires=["colorama >=0.3.7"],

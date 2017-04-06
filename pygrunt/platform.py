@@ -1,0 +1,83 @@
+import os
+from pathlib import Path
+
+class Platform:
+    def __init__(self):
+        self._bool = self.__class__.check()
+
+    def __bool__(self):
+        return self._bool
+
+    @staticmethod
+    def check():
+        return False
+
+    @staticmethod
+    def as_executable(file):
+        raise NotImplementedError()
+
+    @staticmethod
+    def as_static_library(file):
+        raise NotImplementedError()
+
+    @staticmethod
+    def as_shared_library(file):
+        raise NotImplementedError()
+
+    @staticmethod
+    def path():
+        return os.environ['PATH'].split(os.pathsep)
+
+class Windows(Platform):
+    def check():
+        import platform
+        return platform.system() == 'Windows'
+
+    def as_executable(file):
+        p = Path(file)
+        return str(p.with_suffix('.exe'))
+
+    def as_static_library(file):
+        p = Path(file)
+        if not p.name.startswith('lib'):
+            p = p.with_name('lib' + p.name.lower())
+
+        return str(p.with_suffix('.a'))
+
+    def as_shared_library(file):
+        p = Path(file)
+        if not p.name.startswith('lib'):
+            p = p.with_name('lib' + p.name.lower())
+
+        return str(p.with_suffix('.dll'))
+
+# NOTE: I might be wrong on these, needs some actual testing
+class Linux(Platform):
+    def check():
+        import platform
+        return platform.system() == 'Linux'
+
+    def as_executable(file):
+        p = Path(file)
+        return str(p.with_suffix(''))
+
+    def as_static_library(file):
+        p = Path(file)
+        if not p.name.startswith('lib'):
+            p = p.with_name('lib' + p.name.lower())
+
+        return str(p.with_suffix('.a'))
+
+    def as_shared_library(file):
+        p = Path(file)
+        if not p.name.startswith('lib'):
+            p = p.with_name('lib' + p.name.lower())
+
+        return str(p.with_suffix('.so'))
+
+current = None
+known_platforms = [Windows, Linux]
+for platform in known_platforms:
+    if platform():
+        current = platform
+        break
