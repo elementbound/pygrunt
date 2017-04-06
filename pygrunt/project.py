@@ -103,11 +103,29 @@ class Project(BarebonesProject):
             self.install
         ]
 
-        # Filter out non-overloaded stages, since those do nothing
-        for stage in self.stages:
+        # Stages that can be absent
+        optional_stages = ['validate', 'preprocess', 'install']
+
+        # Stages that are empty and should be overridden ( if not optional )
+        empty_stages = ['init', 'gather', 'validate', 'preprocess', 'install']
+
+        # Check stages
+        # Filter out optional non-overloaded stages, these do nothing
+        # Warn about non-overloaded stages that should be overloaded
+        # Note: iterating in reverse because we delete from the list as we go
+        for stage in reversed(self.stages):
             name = stage.__name__
+
             if  getattr(self.__class__, name) == getattr(Project, name):
                 self.stages.remove(stage)
+
+                # Optional stages are okay if left out
+                if stage.__name__ in optional_stages:
+                    continue
+
+                # Non-optional empty stages should be overridden though 
+                if stage.__name__ in empty_stages:
+                    Style.warning('Stage', stage.__name__, 'is empty. Did you forget to override it?')
 
     def run(self):
         Style.title('Building', self.name)

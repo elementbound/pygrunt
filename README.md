@@ -19,7 +19,7 @@ Features are also in short supply, we'll see where this project goes.
 A very early version of ``setup.py`` is included in the repository. Simply run the script and
 it will set up pygrunt with all of its dependencies:
 
-``python setup.py``
+``python setup.py install``
 
 You can optionally add ``develop``. This way, the actual module will not be installed, instead
 a link will be created to its source, enabling you to work on the code while testing it.
@@ -31,7 +31,7 @@ The setup will create a ``pygrunt`` command that you can call from your console.
 > ``git submodule update --init --recursive``
 
 > after cloning.
-> This will clone all the submodules so the examples have actual sources to build. 
+> This will clone all the submodules so the examples have actual sources to build.
 
 ## Usage ##
 
