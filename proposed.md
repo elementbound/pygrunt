@@ -39,6 +39,14 @@ user, overriding each stage.
 These stages could be overridden or straight up skipped through a more generic BarebonesProject
 class.
 
+### Stage hooks ###
+
+Optionally, hooks could be added to the project's stages. These are basically Python's decorators:
+they get the stage function and get called instead of the actual stage.
+
+This is an easy way to hook into the gather stage and sanitize, or hook into the compile stage
+and load/save the recompile cache as necessary. 
+
 ### Compound Projects ###
 
 If a project produces multiple binaries that may even depend on eachother, a CompoundProject
@@ -108,4 +116,4 @@ After the actual config step, the options would be saved to a previously agreed-
 so pygrunt can use it in the build step.
 
 The separate UI would also mean that by default pygrunt will not prompt the user for options,
-it will use the defaults instead. 
+it will use the defaults instead.
