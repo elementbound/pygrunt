@@ -4,7 +4,7 @@ exec(open('pygrunt/version.py').read())
 
 setup(
     name="pygrunt",
-    version=__version_str__,
+    version=version_str,
     packages=find_packages(),
 
     install_requires=["colorama >=0.3.7"],

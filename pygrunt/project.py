@@ -90,7 +90,6 @@ class Project(BarebonesProject):
         # Note: iterating in reverse because we delete from the list as we go
         for stage in reversed(self.stages):
             name = stage.__name__
-            print('Checking stage', name)
 
             if  getattr(self.__class__, name) == getattr(Project, name):
                 # Optional stages are okay if left out
@@ -102,8 +101,6 @@ class Project(BarebonesProject):
                 if stage.__name__ in empty_stages:
                     self.stages.remove(stage)
                     Style.warning('Stage', stage.__name__, 'is empty. Did you forget to override it?')
-
-        print('Stages:', [stage.__name__ for stage in self.stages])
 
     def run(self):
         Style.title('Building', self.name)
