@@ -6,8 +6,7 @@
 
 These would act pretty much like lists, except a bit more clever and specialized for files. You
 can index and iterate them the same way. FileSets store Path objects, have `add` and `remove`
-methods to manipulate contents and don't store the same file twice. Also, important, they are
-**unordered**.
+methods to manipulate contents and don't store the same file twice. 
 
 A variant of this class would be the DirectorySet.
 
@@ -17,7 +16,8 @@ directories.
 ## Projects ##
 
 > This feature has been added before v0.0.30
-> Note: this doesn't include compound projects
+
+> Note: this only includes the core feature, not the related features in the next chapters
 
 Instead of writing a function to build the whole project, the Project class could do this
 in a smarter way.
@@ -55,7 +55,7 @@ way, for example if two projects share source files, don't compile those twice.
 
 The CompoundProject would maintain an **ordered** list of Projects to run.
 
-### Running pygrunt scripts ###
+## Running pygrunt scripts ##
 
 > This feature has been added before v0.0.30
 
@@ -72,6 +72,20 @@ a project:
 py glwrap.py
 pygrunt glwrap
 ```
+
+**Note:** Building projects by simply running the Python scripts is semi-deprecated. Developers
+are still free to write their scripts that way, but using the pygrunt command is encouraged.
+
+### Command line arguments ###
+
+These would be caught and processed by the Project class. Later on as more arguments get added,
+it will probably make more sense that each module catches its own related command-line arguments
+and act accordingly. We'll see.
+
+Some useful arguments:
+ * --clear: Clear output directory  
+ * --clear-cache: Clear recompile cache
+ * --expose-options: Print data about project options
 
 ## Platforms ##
 
