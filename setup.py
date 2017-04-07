@@ -1,8 +1,10 @@
 from setuptools import setup, find_packages
 
+exec(open('pygrunt/version.py').read())
+
 setup(
     name="pygrunt",
-    version="0.3.0",
+    version=__version_str__,
     packages=find_packages(),
 
     install_requires=["colorama >=0.3.7"],
@@ -17,5 +19,10 @@ setup(
         "console_scripts": [
             "pygrunt = pygrunt.run:run"
         ]
-    }
+    },
+
+    classifiers=[
+        'Programming Language :: Python :: 3'
+        # TODO: more classifiers
+    ]
 )
