@@ -1,4 +1,5 @@
 from pygrunt.style import Style
+from pygrunt.version import version
 
 def run():
     import importlib
@@ -13,6 +14,8 @@ def run():
         my_name = Path(sys.argv[0]).name
         print('Usage:', my_name, 'file', '[target=build]')
         return False
+
+    Style.title('pygrunt version ', version)
 
     file = sys.argv[1]
 

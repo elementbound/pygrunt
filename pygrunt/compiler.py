@@ -12,6 +12,7 @@ class Compiler:
         self.flags = {}
         self.include_dirs = DirectorySet()
         self.linker_flags = []
+        self.library_dirs = DirectorySet()
         self.libraries = collections.OrderedDict()
 
         self.unique_flags = {}
@@ -28,6 +29,9 @@ class Compiler:
         return [value for value in self.unique_flags.values() if value is not None]
 
     def _build_library_links(self, libs):
+        raise NotImplementedError()
+
+    def _build_library_dirs(self, dirs):
         raise NotImplementedError()
 
     def _build_user_linker_flags(self, flags):
@@ -47,6 +51,7 @@ class Compiler:
     def _build_linker_flags(self):
         flags = self._build_flags(self.flags) # These flags could also concern the linker
         flags.extend(self._build_unique_flags()) # These too
+        flags.extend(self._build_library_dirs(self.library_dirs))
         flags.extend(self._build_user_linker_flags(self.linker_flags))
         flags.extend(self._build_library_links(self.libraries))
 
@@ -79,7 +84,7 @@ class Compiler:
     def preprocess_source(self, in_file, additional_args=[]):
         import subprocess
 
-        self._args.extend(self._build_unique_flags())
+        self._args.extend(self._build_compiler_flags())
         self._args.extend(additional_args)
 
         result = subprocess.run(self._args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
@@ -91,7 +96,7 @@ class Compiler:
                 Style.error('Preprocess failed: ')
                 print(result.stderr)
 
-            return None
+            return ''
 
     def compile_object(self, in_file, out_file):
         import subprocess
@@ -175,6 +180,9 @@ class GCCCompiler(Compiler):
 
     def _build_library_links(self, libs):
         return ['-l'+x for x in libs]
+
+    def _build_library_dirs(self, dirs):
+        return ['-L'+str(x) for x in dirs]
 
     def _build_includes(self, includes):
         return ['-I'+i for i in includes]
