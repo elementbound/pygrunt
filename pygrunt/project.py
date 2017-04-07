@@ -74,6 +74,7 @@ class Project(BarebonesProject):
         # Check if the class we are initializing is overridden
         # If it's not, a simple build function is used to build the project, thus no need to
         # filter stages and warn about them
+
         if self.__class__ == __class__:
             return
 
@@ -89,17 +90,20 @@ class Project(BarebonesProject):
         # Note: iterating in reverse because we delete from the list as we go
         for stage in reversed(self.stages):
             name = stage.__name__
+            print('Checking stage', name)
 
             if  getattr(self.__class__, name) == getattr(Project, name):
-                self.stages.remove(stage)
-
                 # Optional stages are okay if left out
                 if stage.__name__ in optional_stages:
+                    self.stages.remove(stage)
                     continue
 
                 # Non-optional empty stages should be overridden though
                 if stage.__name__ in empty_stages:
+                    self.stages.remove(stage)
                     Style.warning('Stage', stage.__name__, 'is empty. Did you forget to override it?')
+
+        print('Stages:', [stage.__name__ for stage in self.stages])
 
     def run(self):
         Style.title('Building', self.name)
