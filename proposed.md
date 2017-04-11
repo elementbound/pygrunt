@@ -6,7 +6,7 @@
 
 These would act pretty much like lists, except a bit more clever and specialized for files. You
 can index and iterate them the same way. FileSets store Path objects, have `add` and `remove`
-methods to manipulate contents and don't store the same file twice. 
+methods to manipulate contents and don't store the same file twice.
 
 A variant of this class would be the DirectorySet.
 
@@ -136,3 +136,12 @@ so pygrunt can use it in the build step.
 
 The separate UI would also mean that by default pygrunt will not prompt the user for options,
 it will use the defaults instead.
+
+## Extras and Utilities module ##
+
+Some nifty features that don't exactly fit anywhere else.
+
+Extras are **not used** internally by pygrunt, they are there for the users. Examples could
+include a class for running Cython or a Java compiler class.
+
+Utilities are common abstractions, useful, also used internally by pygrunt. 
