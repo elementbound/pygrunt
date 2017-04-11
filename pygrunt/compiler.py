@@ -250,3 +250,13 @@ def any_list(list):
 # Return a compiler, don't care which
 def any():
     return any_list([GCCCompiler])
+
+# Return a C++ compiler, don't care which
+def any_cpp():
+    # TODO: Figure out how to support more than one, preferably with a list
+    try:
+        return GCCCompiler(cpp=True)
+    except CompilerNotFoundException:
+        pass
+
+    raise CompilerNotFoundException()

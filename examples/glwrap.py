@@ -7,7 +7,7 @@ class GLWrap(pygrunt.Project):
         self.type = 'library'
         self.sanitize()
 
-        self.compiler = pygrunt.GCCCompiler(cpp=True)
+        self.compiler = pygrunt.compiler.any_cpp()
 
     def gather(self):
         self.sources.add('*.cpp')
