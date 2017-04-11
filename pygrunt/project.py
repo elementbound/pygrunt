@@ -3,6 +3,18 @@ from .style import Style
 from .fileset import FileSet, DirectorySet
 import pygrunt.platform as platform
 
+class StageFailException(Exception):
+    def __init__(self, stage):
+        self.stage = stage
+        super().__init__("Stage \"{0}\" failed".format(stage))
+
+
+class StageSkipException(Exception):
+    def __init__(stage):
+        self.stage = stage
+        super().__init__("Stage \"{0}\" requested skip".format(stage))
+
+
 class BarebonesProject:
     def __init__(self, name=None):
         self.name = name if name is not None else self.__class__.__name__
@@ -55,7 +67,16 @@ class BarebonesProject:
 
         for idx, stage in enumerate(self.stages):
             Style.title('[{0}/{1}]'.format(idx+1, len(self.stages)), 'Running stage', stage.__name__)
-            stage()
+
+            try:
+                stage()
+            except StageFailException:
+                Style.error('Stage', stage.__name__, 'failed!')
+                return False
+            except StageSkipException:
+                pass
+
+        return True
 
 
 class Project(BarebonesProject):
@@ -110,18 +131,26 @@ class Project(BarebonesProject):
 
             # Additional behaviour here...
             # TODO: Solve this in a much less hacky way
-            if stage.__name__ == 'compile':
-                cachefile = str(Path(self.output_dir, 'recompile.cache'))
+            try:
+                if stage.__name__ == 'compile':
+                    cachefile = str(Path(self.output_dir, 'recompile.cache'))
 
-                # Try loading recompile cache
-                self.compiler.recompile.load_cache(cachefile)
+                    # Try loading recompile cache
+                    self.compiler.recompile.load_cache(cachefile)
 
-                stage()
+                    stage()
 
-                # Save recompile cache
-                self.compiler.recompile.save_cache(cachefile)
-            else:
-                stage()
+                    # Save recompile cache
+                    self.compiler.recompile.save_cache(cachefile)
+                else:
+                    stage()
+            except StageFailException:
+                Style.error('Stage', stage.__name__, 'failed!')
+                return False
+            except StageSkipException:
+                pass
+
+        return True 
 
     # Stages:
     def init(self):
@@ -141,7 +170,7 @@ class Project(BarebonesProject):
 
         if self.compiler is None:
             Style.error('No compiler to use!')
-            return False
+            raise StageFailException(__name__)
 
         self.sanitize()
         cc = self.compiler
@@ -176,7 +205,7 @@ class Project(BarebonesProject):
 
             # Fail if one of the files doesn't compile
             if not cc.compile_object(str(file), out_file):
-                return False
+                raise StageFailException(__name__)
 
             object_files.append(out_file)
 
