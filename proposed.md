@@ -41,6 +41,8 @@ class.
 
 ### Stage hooks ###
 
+> This feature was added in v0.4
+
 Optionally, hooks could be added to the project's stages. These are basically Python's decorators:
 they get the stage function and get called instead of the actual stage.
 
@@ -144,4 +146,18 @@ Some nifty features that don't exactly fit anywhere else.
 Extras are **not used** internally by pygrunt, they are there for the users. Examples could
 include a class for running Cython or a Java compiler class.
 
-Utilities are common abstractions, useful, also used internally by pygrunt. 
+Utilities are common abstractions, useful, also used internally by pygrunt.
+
+### Cython ###
+
+> This feature is planned for v0.5
+
+Since one of my projects is using Cython right now, why the hell not write some Cython-handy
+features.
+
+The main Cython class would be similar to a Compiler, but would not inherit from it.
+
+A nifty feature would also be a @with_cython decorator for Projects. This would add a cython_sources
+FileSet, and a Stage Hook to preprocess ( or a preprocess stage if it's not present ). This would
+preprocess all the added cython_sources and generate .c files. Optionally it could add these
+generated files to the project's sources.

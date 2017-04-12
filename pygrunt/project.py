@@ -29,6 +29,9 @@ class BarebonesProject:
 
         self.stages = []
 
+        # TODO: Possibly private?
+        self.stage_hooks = {}
+
     # Set some sane defaults
     def sanitize(self):
         import os.path
@@ -62,6 +65,35 @@ class BarebonesProject:
 
         self.sources.working_directory = Path(self.working_dir)
 
+        self._init_hooks()
+
+    # Stage hooks
+
+    # Create an empty list for each stage
+    def _init_hooks(self):
+        for stage in self.stages:
+            self.stage_hooks[stage.__name__] = []
+
+    def _hook_key(self, stage):
+        if type(stage) is str:
+            return stage
+        else:
+            return stage.__name__
+
+    def _hooks_for_stage(self, stage):
+        stage = self._hook_key(stage)
+        try:
+            return self.stage_hooks[stage]
+        except KeyError:
+            return []
+
+    def hook_stage(self, stage, hook):
+        self.stage_hooks[self._hook_key(stage)].append(hook)
+
+    def unhook_stage(self, stage, hook):
+        self.stage_hooks[self._hook_key(stage)].remove(hook)
+
+    # Run project
     def run(self):
         Style.title('Building', self.name)
 
@@ -69,7 +101,15 @@ class BarebonesProject:
             Style.title('[{0}/{1}]'.format(idx+1, len(self.stages)), 'Running stage', stage.__name__)
 
             try:
-                stage()
+                # Apply all decorators
+                hooks = self._hooks_for_stage(stage)
+                hooked_stage = stage
+
+                for hook in hooks:
+                    hooked_stage = hook(hooked_stage, self)
+
+                # Call the stage with all its hooks
+                hooked_stage()
             except StageFailException:
                 Style.error('Stage', stage.__name__, 'failed!')
                 return False
@@ -123,34 +163,25 @@ class Project(BarebonesProject):
                     self.stages.remove(stage)
                     Style.warning('Stage', stage.__name__, 'is empty. Did you forget to override it?')
 
-    def run(self):
-        Style.title('Building', self.name)
+        # Add stage hooks
 
-        for idx, stage in enumerate(self.stages):
-            Style.title('[{0}/{1}]'.format(idx+1, len(self.stages)), 'Running stage', stage.__name__)
+        self._init_hooks()
 
-            # Additional behaviour here...
-            # TODO: Solve this in a much less hacky way
-            try:
-                if stage.__name__ == 'compile':
-                    cachefile = str(Path(self.output_dir, 'recompile.cache'))
+        def cache_hook(fn, project):
+            def _hook():
+                cachefile = str(Path(project.output_dir, 'recompile.cache'))
 
-                    # Try loading recompile cache
-                    self.compiler.recompile.load_cache(cachefile)
+                # Try loading recompile cache
+                project.compiler.recompile.load_cache(cachefile)
 
-                    stage()
+                fn()
 
-                    # Save recompile cache
-                    self.compiler.recompile.save_cache(cachefile)
-                else:
-                    stage()
-            except StageFailException:
-                Style.error('Stage', stage.__name__, 'failed!')
-                return False
-            except StageSkipException:
-                pass
+                # Save cache
+                project.compiler.recompile.save_cache(cachefile)
 
-        return True 
+            return _hook
+
+        self.hook_stage('compile', cache_hook)
 
     # Stages:
     def init(self):
