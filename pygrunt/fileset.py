@@ -4,9 +4,9 @@ from glob import glob
 
 # TODO: Use set instead of list
 class FileSet:
-    def __init__(self):
+    def __init__(self, cwd=os.curdir):
         self._data = []
-        self.working_directory = Path(os.curdir)
+        self.working_directory = Path(cwd)
 
     def _process_str_paths(self, paths):
         # TODO: Dies if a file doesn't exist
@@ -19,8 +19,17 @@ class FileSet:
         added = 0
 
         for pattern in args:
-            files = self._glob(pattern)
-            files = self._process_str_paths(files)
+            try:
+                files = self._glob(pattern)
+                files = self._process_str_paths(files)
+            except NotImplementedError:
+                # self._glob says "Non-relative patterns are unsupported"
+                # Check if it exists and add it
+                files = Path(pattern)
+                if files.exists():
+                    files = [files]
+                else:
+                    files = None
 
             if not files:
                 # TODO: Proper handling of this?
