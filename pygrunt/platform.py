@@ -10,29 +10,40 @@ class Platform:
     def __bool__(self):
         return self._bool
 
-    @staticmethod
-    def check():
+    @classmethod
+    def check(klass):
         return False
 
-    @staticmethod
-    def as_executable(file):
+    @classmethod
+    def as_executable(klass, file):
         raise NotImplementedError()
 
-    @staticmethod
-    def as_static_library(file):
+    @classmethod
+    def as_static_library(klass, file):
         raise NotImplementedError()
 
-    @staticmethod
-    def as_shared_library(file):
+    @classmethod
+    def as_shared_library(klass, file):
         raise NotImplementedError()
 
-    @staticmethod
-    def as_object(file):
+    @classmethod
+    def as_object(klass, file):
         return str(Path(file).with_suffix('.o'))
 
-    @staticmethod
-    def path():
+    @classmethod
+    def path(klass):
         return os.environ['PATH'].split(os.pathsep)
+
+    @classmethod
+    def find_executable(klass, name):
+        name = klass.as_executable(name)
+
+        for path in klass.path():
+            path = Path(path, name)
+            if path.is_file():
+                return str(path)
+
+        return None
 
 class Unknown(Platform):
     pass
@@ -40,22 +51,26 @@ class Unknown(Platform):
 class Windows(Platform):
     vagueness = 0
 
-    def check():
+    @classmethod
+    def check(klass):
         import platform
         return platform.system() == 'Windows'
 
-    def as_executable(file):
+    @classmethod
+    def as_executable(klass, file):
         p = Path(file)
         return str(p.with_suffix('.exe'))
 
-    def as_static_library(file):
+    @classmethod
+    def as_static_library(klass, file):
         p = Path(file)
         if not p.name.startswith('lib'):
             p = p.with_name('lib' + p.name.lower())
 
         return str(p.with_suffix('.a'))
 
-    def as_shared_library(file):
+    @classmethod
+    def as_shared_library(klass, file):
         p = Path(file)
         if not p.name.startswith('lib'):
             p = p.with_name('lib' + p.name.lower())
@@ -66,22 +81,26 @@ class Windows(Platform):
 class Linux(Platform):
     vagueness = 4
 
-    def check():
+    @classmethod
+    def check(klass):
         import platform
         return platform.system() == 'Linux'
 
-    def as_executable(file):
+    @classmethod
+    def as_executable(klass, file):
         p = Path(file)
         return str(p.with_suffix(''))
 
-    def as_static_library(file):
+    @classmethod
+    def as_static_library(klass, file):
         p = Path(file)
         if not p.name.startswith('lib'):
             p = p.with_name('lib' + p.name.lower())
 
         return str(p.with_suffix('.a'))
 
-    def as_shared_library(file):
+    @classmethod
+    def as_shared_library(klass, file):
         p = Path(file)
         if not p.name.startswith('lib'):
             p = p.with_name('lib' + p.name.lower())
