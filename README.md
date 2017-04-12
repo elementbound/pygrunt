@@ -21,8 +21,9 @@ it will set up pygrunt with all of its dependencies:
 
 ``python setup.py install``
 
-You can optionally add ``develop``. This way, the actual module will not be installed, instead
-a link will be created to its source, enabling you to work on the code while testing it.
+If you want to work on the code instead, run
+
+``python setup.py develop``
 
 The setup will create a ``pygrunt`` command that you can call from your console.
 
