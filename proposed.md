@@ -150,7 +150,7 @@ Utilities are common abstractions, useful, also used internally by pygrunt.
 
 ### Cython ###
 
-> This feature is planned for v0.5
+> This feature was added in v0.5
 
 Since one of my projects is using Cython right now, why the hell not write some Cython-handy
 features.

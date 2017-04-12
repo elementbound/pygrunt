@@ -1,8 +1,9 @@
 import pygrunt
 import pygrunt.compiler
-from pygrunt import Style
 import shutil
+from pygrunt import Style
 from pygrunt.extras import Cython
+from pathlib import Path
 
 class CythonTest(pygrunt.Project):
     def init(self):
@@ -23,7 +24,8 @@ class CythonTest(pygrunt.Project):
         pass
 
     def install(self):
-        Style.info(self.executable, '->', Cython.as_module(self.executable))
-        shutil.move(self.executable, Cython.as_module(self.executable))
+        dst = Cython.as_module(Path(self.output_dir, 'cytest'))
+        Style.info(self.executable, '->', dst)
+        shutil.move(self.executable, dst)
 
 build = CythonTest

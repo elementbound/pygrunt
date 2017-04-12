@@ -1,2 +1,2 @@
-cdef efficient_hello():
+cpdef efficient_hello():
     print('Hello from the otherside!')
