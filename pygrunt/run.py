@@ -9,13 +9,18 @@ def run():
     import os
     from pathlib import Path
 
+    if len(sys.argv) == 2:
+        if sys.argv[1] == '--version':
+            print('pygrunt version', version)
+            return True 
+
     # Parse command line arguments
     if len(sys.argv) < 2:
         my_name = Path(sys.argv[0]).name
         print('Usage:', my_name, 'file', '[target=build]')
         return False
 
-    Style.title('pygrunt version ', version)
+    Style.title('pygrunt version', version)
 
     file = sys.argv[1]
 
