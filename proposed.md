@@ -51,6 +51,8 @@ and load/save the recompile cache as necessary.
 
 ### Compound Projects ###
 
+> This feature is planned for v0.6
+
 If a project produces multiple binaries that may even depend on eachother, a CompoundProject
 can be used to combine them. The CompoundProject will try to run through its stages in a smarter
 way, for example if two projects share source files, don't compile those twice.
@@ -86,6 +88,45 @@ through its constructor.
 This way, you can also build a hierarchy of projects. For example, have separate projects for 
 each library, then each test, group the libraries into one WaterfallProject, the tests into 
 another, then group these two into a compile-all project which is later defined as *build*. 
+
+### Single Project Multiple Output ### 
+
+> This feature is planned for v0.6 or v0.7
+
+This can be relevant for many projects. For now, it's especially relevant for Cython projects. 
+
+The idea is to have a main project, which will combine all the sources, then the individual 
+outputs will just link the necessary object files. 
+
+These outputs should be described with a simple and concise syntax, either as a class variable 
+or as a list in the project's init stage. The parent project would combine the common sources, 
+settings and linked libraries. These would be inherited by its outputs. The outputs themselves 
+would be defined with the settings specific to that output. 
+
+Since I'm still trying to not complicate the hierarchy ( everything is a project, either a 
+complex or simple ), this would be easily implemented with a Project class, with a special 
+constructor, so the syntax could be kept concise. 
+
+Obviously it would get more verbose if additional customization is needed ( include dirs, 
+flags, any compiler setting in general ). Compiler settings could possibly be packed into 
+a utility constructor. Putting these additional settings into the project's constructor would 
+mean that the output project has to know about the compiler's specifics too. 
+
+> What about a builder-like syntax? 
+```python 
+output = pygrunt.OutputProject()
+	.sources('tests/window.cpp')
+	.set_compiler(pygrunt.compiler.any())
+	.compiler_config('set_standard', 'c11')
+	.compiler_config('link', 'glfw3', 'opengl32')
+```
+> Although, this would blindly forward function calls, which might not exactly be hack-free. 
+> Again, we don't want to filter these from the Project's code, because the Project really 
+> doesn't want to mess with the compiler's specifics ( or any of its external components, for 
+> that matter ). 
+
+> It would also be nice to have an autocomplete-compatible solution, instead of passing 
+> function names as strings. 
 
 ## Running pygrunt scripts ##
 
