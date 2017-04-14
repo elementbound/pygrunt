@@ -57,6 +57,36 @@ way, for example if two projects share source files, don't compile those twice.
 
 The CompoundProject would maintain an **ordered** list of Projects to run.
 
+> Possibly call these **WaterfallProject**
+
+CompoundProjects would be defined in a markup-like manner: 
+
+```python
+import pygrunt
+
+class FooProject(pygrunt.Project): 
+	"""Foo project"""
+
+class BarProject(pygrunt.Project): 
+	"""Bar project"""
+
+class CombinedProject(pygrunt.WaterfallProject): 
+	projects = [
+		FooProject, 
+		BarProject
+	]
+
+build = CombinedProject
+```
+
+The projects defined in the class variable can either be Project-like classes ( no explicit 
+type checking is done ), or instances of those classes, in case you want to customize it 
+through its constructor. 
+
+This way, you can also build a hierarchy of projects. For example, have separate projects for 
+each library, then each test, group the libraries into one WaterfallProject, the tests into 
+another, then group these two into a compile-all project which is later defined as *build*. 
+
 ## Running pygrunt scripts ##
 
 > This feature has been added before v0.0.30
