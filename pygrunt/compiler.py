@@ -109,7 +109,7 @@ class Compiler:
         old_args = self._args
         if os.path.isfile(out_file):
             if not self.recompile.should_recompile(in_file):
-                Style.info('Nothing to do with', in_file)
+                # Style.info('Nothing to do with', in_file)
                 return True
         self._args = old_args
 
