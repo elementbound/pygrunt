@@ -218,6 +218,7 @@ class Project(BarebonesProject):
         from concurrent.futures import ThreadPoolExecutor
         from threading import Lock
         to_compile = []
+        futures = []
 
         for idx, file in enumerate(self.sources):
             in_file = file.relative_to(self.working_dir)
@@ -246,13 +247,21 @@ class Project(BarebonesProject):
                 return False
 
         def _process_done(f):
+            if f.cancelled():
+                return
+
             with print_lock:
                 if f.exception():
                     Style.error('Exception: ', f.exception())
-                    return False
 
                 if not f.result():
                     Style.error('Fail')
+
+                if f.exception() or not f.result():
+                    Style.info('Cancelling tasks...')
+                    for f in futures:
+                        f.cancel()
+
                     return False
 
         import multiprocessing
@@ -263,6 +272,11 @@ class Project(BarebonesProject):
             for in_file, out_file, idx in to_compile:
                 f = e.submit(_process, in_file, out_file, idx)
                 f.add_done_callback(_process_done)
+                futures.append(f)
+
+        # Check if any of the futures failed
+        if any([f.cancelled() for f in futures]):
+            raise StageFailException(__name__)
 
         # Save compile cache
         cc.recompile.save_cache(os.path.join(self.output_dir, 'recompile.cache'))
