@@ -215,30 +215,49 @@ class Project(BarebonesProject):
         # Go through each source file and then link them
         object_files = []
 
+        from concurrent.futures import ThreadPoolExecutor
+        from threading import Lock
+        to_compile = []
+
         for idx, file in enumerate(self.sources):
-            # TODO: pathlib.Path instead of os.path
-            in_file = str(file)
-            in_file = os.path.relpath(in_file, self.working_dir)
+            in_file = file.relative_to(self.working_dir)
 
-            out_file = os.path.join(self.output_dir, in_file)
+            out_file = Path(self.output_dir, in_file)
             out_file = platform.current.as_object(out_file)
-            out_dir = os.path.dirname(out_file)
+            out_file = Path(out_file)
 
-            # Create path for output file if it does not exist
-            if not os.path.exists(out_dir):
-                os.makedirs(out_dir)
+            to_compile.append((file.resolve(), out_file, idx))
 
-            # Print what's happening
-            print_in = in_file
-            print_out = os.path.relpath(out_file, self.output_dir)
-            print('[{0:3.0f}%]'.format((idx+1)/len(self.sources)*100), end=' ')
-            Style.object('Compiling', in_file, '->', print_out)
+        print_lock = Lock()
+        def _process(in_file, out_file, index):
+            in_name = str(in_file.relative_to(self.working_dir))
+            out_name = str(out_file.relative_to(self.output_dir))
 
-            # Fail if one of the files doesn't compile
-            if not cc.compile_object(str(file), out_file):
-                raise StageFailException(__name__)
+            with print_lock:
+                percent = (index+1) / len(self.sources)
+                print('[{0:<3}%] '.format(int(percent*100)), end='')
+                Style.object('Compiling', in_name, '->', out_name)
 
-            object_files.append(out_file)
+            if cc.compile_object(str(in_file), str(out_file)):
+                object_files.append(str(out_file))
+                return True
+            else:
+                return False
+
+        def _process_done(f):
+            with print_lock:
+                if f.exception():
+                    Style.error('Exception: ', f.exception())
+                    return False
+
+                if not f.result():
+                    Style.error('Fail')
+                    return False
+
+        with ThreadPoolExecutor(max_workers=4) as e:
+            for in_file, out_file, idx in to_compile:
+                f = e.submit(_process, in_file, out_file, idx)
+                f.add_done_callback(_process_done)
 
         # Save compile cache
         cc.recompile.save_cache(os.path.join(self.output_dir, 'recompile.cache'))
