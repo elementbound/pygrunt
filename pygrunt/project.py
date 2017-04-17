@@ -238,6 +238,7 @@ class Project(BarebonesProject):
                 print('[{0:<3}%] '.format(int(percent*100)), end='')
                 Style.object('Compiling', in_name, '->', out_name)
 
+            out_file.parent.mkdir(exist_ok=True, parents=True)
             if cc.compile_object(str(in_file), str(out_file)):
                 object_files.append(str(out_file))
                 return True
@@ -254,7 +255,11 @@ class Project(BarebonesProject):
                     Style.error('Fail')
                     return False
 
-        with ThreadPoolExecutor(max_workers=4) as e:
+        import multiprocessing
+        thread_count = multiprocessing.cpu_count() * 2
+
+        print('Compiling with', thread_count, 'threads')
+        with ThreadPoolExecutor(max_workers=thread_count) as e:
             for in_file, out_file, idx in to_compile:
                 f = e.submit(_process, in_file, out_file, idx)
                 f.add_done_callback(_process_done)
