@@ -15,7 +15,9 @@ def _parse_args(args):
     parser.add_argument('--clear', action='store_true', help='Clear output directory')
     parser.add_argument('--clear-cache', action='store_true', help='Clear cache before compiling')
 
-    # TODO: If the user passes --version, don't care about other arguments
+    parser.add_argument('--threads', '-t', type=int, help='Set thread count; defaults to cores*2')
+    parser.add_argument('--no-threading', '-nt', action='store_true', help='Disable multithreaded compiling')
+
     # TODO: Make target '*' instead of '?' so multiple targets could be ran from the same command
 
     return parser.parse_args(args)

@@ -264,14 +264,15 @@ class Project(BarebonesProject):
             in_name = str(in_file.relative_to(self.working_dir))
             out_name = str(out_file.relative_to(self.output_dir))
 
-            with print_lock:
-                percent = (index+1) / len(self.sources)
-                print('[{0:<3}%] '.format(int(percent*100)), end='')
-                Style.object('Compiling', in_name, '->', out_name)
-
             out_file.parent.mkdir(exist_ok=True, parents=True)
             if cc.compile_object(str(in_file), str(out_file)):
                 object_files.append(str(out_file))
+
+                with print_lock:
+                    percent = len(object_files) / len(self.sources)
+                    print('[{0:<3}%] '.format(int(percent*100)), end='')
+                    Style.object('Compiled', in_name, '->', out_name)
+
                 return True
             else:
                 return False
@@ -295,7 +296,10 @@ class Project(BarebonesProject):
                     return False
 
         import multiprocessing
-        thread_count = multiprocessing.cpu_count() * 2
+        if pygrunt.args.threads is None:
+            thread_count = multiprocessing.cpu_count() * 2
+        else:
+            thread_count = pygrunt.args.threads
 
         print('Compiling with', thread_count, 'threads')
         with ThreadPoolExecutor(max_workers=thread_count) as e:
