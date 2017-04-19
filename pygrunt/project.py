@@ -2,6 +2,7 @@ from pathlib import Path
 from .style import Style
 from .fileset import FileSet, DirectorySet
 import pygrunt.platform as platform
+import pygrunt # args
 
 class StageFailException(Exception):
     def __init__(self, stage):
@@ -211,6 +212,8 @@ class Project(BarebonesProject):
 
         # Try loading cache for self.recompile
         cc.recompile.load_cache(os.path.join(self.output_dir, 'recompile.cache'))
+        if pygrunt.args.clear_cache:
+            cc.recompile.clear_cache()
 
         # Go through each source file and then link them
         object_files = []
