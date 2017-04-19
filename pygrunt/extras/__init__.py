@@ -1,3 +1,3 @@
-from .cython import Cython
+from .cython import Cython, CythonProject
 
 __all__ = ['cython']

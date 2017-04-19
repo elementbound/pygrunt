@@ -1,3 +1,4 @@
+import pygrunt
 import pygrunt.platform as platform
 from pygrunt import Style, FileSet, StageFailException
 
@@ -10,8 +11,8 @@ class Cython:
     def __init__(self):
         import os
 
-        self.executable = platform.current.find_executable('cython')
-        if self.executable is None:
+        self.executable_path = platform.current.find_executable('cython')
+        if self.executable_path is None:
             raise CythonNotFoundException()
 
         self.working_directory = os.curdir
@@ -109,7 +110,7 @@ class Cython:
             Style.warning('Can\'t compile for Python version', self.python)
             Style.warning('Skipping flag')
 
-        args = ['cython'] + arg_settings + [in_file, '-o', out_file]
+        args = [self.executable_path] + arg_settings + [in_file, '-o', out_file]
 
         result = subprocess.run(args)
         if result.returncode != 0:
@@ -168,3 +169,45 @@ class Cython:
                 return str(path)
 
         return None
+
+from pathlib import Path
+
+class CythonCompiler(pygrunt.Compiler):
+    def __init__(self):
+        super().__init__()
+
+        self._cy = Cython()
+
+    def preprocess_source(self, in_file, additional_args=[]):
+        with Path(in_file).open('r') as f:
+            return f.read()
+
+    def as_object(self, file):
+        return str(Path(file).with_suffix('.c'))
+
+    def compile_object(self, in_file, out_file):
+        return self._cy.process(in_file, out_file)
+
+class CythonProject(pygrunt.Project):
+    @staticmethod
+    def _init_hook(fn, project):
+        def _hook():
+            fn()
+
+            project._base_compiler = project.compiler
+            project.compiler = CythonCompiler()
+
+        return _hook
+
+    def _post_compile_hook(fn, project):
+        def _hook():
+            fn()
+
+            Style.info('This is where we compile each project...')
+
+        return _hook
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.hook_stage('init', CythonProject._init_hook)
+        self.hook_stage('compile', CythonProject._post_compile_hook)
