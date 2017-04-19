@@ -4,13 +4,18 @@ import argparse
 
 def _parse_args(args):
     parser = argparse.ArgumentParser()
+
+    if any([arg == '--version' for arg in args]):
+        return argparse.Namespace(version=True)
+
     parser.add_argument('script', help='Script to run')
-    parser.add_argument('target', nargs='?', default='build')
+    parser.add_argument('target', nargs='?', default='build', help='Target object to build; defaults to \'build\'')
 
     parser.add_argument('--version', action='store_true', help='Print version info and exit')
     parser.add_argument('--clear', action='store_true', help='Clear output directory')
     parser.add_argument('--clear-cache', action='store_true', help='Clear cache before compiling')
 
+    # TODO: If the user passes --version, don't care about other arguments
     # TODO: Make target '*' instead of '?' so multiple targets could be ran from the same command
 
     return parser.parse_args(args)
