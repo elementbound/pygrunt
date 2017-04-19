@@ -142,13 +142,9 @@ class Compiler:
         return result.returncode == 0
 
     def compile_project(self, project):
-        # TODO: Remove before v1.0.0
         Style.warning('Compiler.compile_project() is deprecated! Use Project.compile() instead.')
         project.compiler = self
         return project.compile()
-
-    def as_object(self, file):
-        return str(Path(file).with_suffix('.o'))
 
 class CompilerNotFoundException(Exception):
     pass
