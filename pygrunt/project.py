@@ -210,6 +210,33 @@ class Project(BarebonesProject):
         Style.info('Source directory is', self.working_dir)
         Style.info('Build directory is', self.output_dir)
 
+        if pygrunt.args.clear:
+            import os
+            Style.info('Cleaning up')
+
+            all_entries = Path(self.output_dir).glob('**/*')
+            delete_files = [entry for entry in all_entries if entry.is_file()]
+            delete_dirs = [entry for entry in all_entries if entry.is_dir()]
+
+            for file in delete_files:
+                try:
+                    os.remove(str(file))
+                    Style.info('Removed file', str(file))
+                except Exception as e:
+                    Style.warning('Failed to remove file', str(file))
+                    Style.warning(e)
+
+            for dir in delete_dirs:
+                try:
+                    os.rmdir(str(dir))
+                    Style.info('Removed directory', str(dir))
+                except Exception as e:
+                    Style.warning('Failed to remove directory', str(dir))
+                    Style.warning(e)
+
+            # TODO: Signal project to stop
+            return True
+
         # Try loading cache for self.recompile
         cc.recompile.load_cache(os.path.join(self.output_dir, 'recompile.cache'))
         if pygrunt.args.clear_cache:
