@@ -61,72 +61,72 @@ The CompoundProject would maintain an **ordered** list of Projects to run.
 
 > Possibly call these **WaterfallProject**
 
-CompoundProjects would be defined in a markup-like manner: 
+CompoundProjects would be defined in a markup-like manner:
 
 ```python
 import pygrunt
 
-class FooProject(pygrunt.Project): 
+class FooProject(pygrunt.Project):
 	"""Foo project"""
 
-class BarProject(pygrunt.Project): 
+class BarProject(pygrunt.Project):
 	"""Bar project"""
 
-class CombinedProject(pygrunt.WaterfallProject): 
+class CombinedProject(pygrunt.WaterfallProject):
 	projects = [
-		FooProject, 
+		FooProject,
 		BarProject
 	]
 
 build = CombinedProject
 ```
 
-The projects defined in the class variable can either be Project-like classes ( no explicit 
-type checking is done ), or instances of those classes, in case you want to customize it 
-through its constructor. 
+The projects defined in the class variable can either be Project-like classes ( no explicit
+type checking is done ), or instances of those classes, in case you want to customize it
+through its constructor.
 
-This way, you can also build a hierarchy of projects. For example, have separate projects for 
-each library, then each test, group the libraries into one WaterfallProject, the tests into 
-another, then group these two into a compile-all project which is later defined as *build*. 
+This way, you can also build a hierarchy of projects. For example, have separate projects for
+each library, then each test, group the libraries into one WaterfallProject, the tests into
+another, then group these two into a compile-all project which is later defined as *build*.
 
-### Single Project Multiple Output ### 
+### Single Project Multiple Output ###
 
 > This feature is planned for v0.6 or v0.7
 
-This can be relevant for many projects. For now, it's especially relevant for Cython projects. 
+This can be relevant for many projects. For now, it's especially relevant for Cython projects.
 
-The idea is to have a main project, which will combine all the sources, then the individual 
-outputs will just link the necessary object files. 
+The idea is to have a main project, which will combine all the sources, then the individual
+outputs will just link the necessary object files.
 
-These outputs should be described with a simple and concise syntax, either as a class variable 
-or as a list in the project's init stage. The parent project would combine the common sources, 
-settings and linked libraries. These would be inherited by its outputs. The outputs themselves 
-would be defined with the settings specific to that output. 
+These outputs should be described with a simple and concise syntax, either as a class variable
+or as a list in the project's init stage. The parent project would combine the common sources,
+settings and linked libraries. These would be inherited by its outputs. The outputs themselves
+would be defined with the settings specific to that output.
 
-Since I'm still trying to not complicate the hierarchy ( everything is a project, either a 
-complex or simple ), this would be easily implemented with a Project class, with a special 
-constructor, so the syntax could be kept concise. 
+Since I'm still trying to not complicate the hierarchy ( everything is a project, either a
+complex or simple ), this would be easily implemented with a Project class, with a special
+constructor, so the syntax could be kept concise.
 
-Obviously it would get more verbose if additional customization is needed ( include dirs, 
-flags, any compiler setting in general ). Compiler settings could possibly be packed into 
-a utility constructor. Putting these additional settings into the project's constructor would 
-mean that the output project has to know about the compiler's specifics too. 
+Obviously it would get more verbose if additional customization is needed ( include dirs,
+flags, any compiler setting in general ). Compiler settings could possibly be packed into
+a utility constructor. Putting these additional settings into the project's constructor would
+mean that the output project has to know about the compiler's specifics too.
 
-> What about a builder-like syntax? 
-```python 
+> What about a builder-like syntax?
+```python
 output = pygrunt.OutputProject()
 	.sources('tests/window.cpp')
 	.set_compiler(pygrunt.compiler.any())
 	.compiler_config('set_standard', 'c11')
 	.compiler_config('link', 'glfw3', 'opengl32')
 ```
-> Although, this would blindly forward function calls, which might not exactly be hack-free. 
-> Again, we don't want to filter these from the Project's code, because the Project really 
-> doesn't want to mess with the compiler's specifics ( or any of its external components, for 
-> that matter ). 
+> Although, this would blindly forward function calls, which might not exactly be hack-free.
+> Again, we don't want to filter these from the Project's code, because the Project really
+> doesn't want to mess with the compiler's specifics ( or any of its external components, for
+> that matter ).
 
-> It would also be nice to have an autocomplete-compatible solution, instead of passing 
-> function names as strings. 
+> It would also be nice to have an autocomplete-compatible solution, instead of passing
+> function names as strings.
 
 ## Running pygrunt scripts ##
 
@@ -150,6 +150,8 @@ pygrunt glwrap
 are still free to write their scripts that way, but using the pygrunt command is encouraged.
 
 ### Command line arguments ###
+
+> See branch proposal-cmdargs
 
 These would be caught and processed by the Project class. Later on as more arguments get added,
 it will probably make more sense that each module catches its own related command-line arguments
@@ -232,3 +234,21 @@ A nifty feature would also be a @with_cython decorator for Projects. This would 
 FileSet, and a Stage Hook to preprocess ( or a preprocess stage if it's not present ). This would
 preprocess all the added cython_sources and generate .c files. Optionally it could add these
 generated files to the project's sources.
+
+#### CythonProject ####
+
+The @with_cython feature feels clumsy, since the traditional Project and a Cython project work
+differently. The usual Project has a bunch of sources and one output. A Cython Project translates
+a bunch of .pyx files to .c and compiles each of them **as a separate module**. So it has multiple
+outputs.
+
+It makes a lot more sense to have a CythonProject that does the transpiling and compiling,
+instead of trying to cram everything into the Project class.
+
+> What about additional sources needed by the .pyx files?
+
+> If the .pyx files depend on a library, that's fine - just tell Cython's compiler to link against
+> them.
+
+> If those are source files, either compile them to a library beforehand with a different project.
+> Adding this functionality to CythonProject doesn't make that much sense.
