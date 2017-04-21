@@ -252,3 +252,12 @@ instead of trying to cram everything into the Project class.
 
 > If those are source files, either compile them to a library beforehand with a different project.
 > Adding this functionality to CythonProject doesn't make that much sense.
+
+## The Second Refactoring ##
+
+Some features have been added, although in a hacky way, and the current architecture can't
+necessarily support them in a clean way.
+
+ * Stage defs instead of stage hooks
+ * Project class is getting bloated
+ * Uniform way to do something to a bunch of files? ( aka. support threading properly )
