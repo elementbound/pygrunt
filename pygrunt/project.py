@@ -185,6 +185,44 @@ class Project(BarebonesProject):
 
         self.hook_stage('compile', cache_hook)
 
+        def clear_hook(fn, project):
+            def _hook():
+                fn()
+
+                if pygrunt.args.clear:
+                    self.clear()
+
+                    # TODO: Find a better way to stop the project
+                    raise StageFailException(__name__)
+
+            return _hook
+
+        self.hook_stage('init', clear_hook)
+
+    def clear(self):
+        import os
+        Style.info('Cleaning up')
+
+        all_entries = Path(self.output_dir).glob('**/*')
+        delete_files = [entry for entry in all_entries if entry.is_file()]
+        delete_dirs = [entry for entry in all_entries if entry.is_dir()]
+
+        for file in delete_files:
+            try:
+                os.remove(str(file))
+                Style.info('Removed file', str(file))
+            except Exception as e:
+                Style.warning('Failed to remove file', str(file))
+                Style.warning(e)
+
+        for dir in delete_dirs:
+            try:
+                os.rmdir(str(dir))
+                Style.info('Removed directory', str(dir))
+            except Exception as e:
+                Style.warning('Failed to remove directory', str(dir))
+                Style.warning(e)
+
     # Stages:
     def init(self):
         pass
