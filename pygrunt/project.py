@@ -203,9 +203,15 @@ class Project(BarebonesProject):
         import os
         Style.info('Cleaning up')
 
-        all_entries = Path(self.output_dir).glob('**/*')
-        delete_files = [entry for entry in all_entries if entry.is_file()]
-        delete_dirs = [entry for entry in all_entries if entry.is_dir()]
+        delete_files = []
+        delete_dirs = []
+
+        for dirpath, dirnames, filenames in os.walk(self.output_dir):
+            delete_files.extend([Path(dirpath, file) for file in filenames])
+            delete_dirs.extend([Path(dirpath, dir) for dir in dirnames])
+
+        # Delete leaf dirs first
+        delete_dirs = sorted(delete_dirs, key=lambda x: len(x.parts), reverse=True)
 
         for file in delete_files:
             try:
