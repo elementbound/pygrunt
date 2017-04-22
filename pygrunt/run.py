@@ -1,5 +1,29 @@
 from pygrunt.style import Style
 import pygrunt
+import argparse
+
+def _parse_args(args):
+    parser = argparse.ArgumentParser()
+
+    if any([arg == '--version' for arg in args]):
+        return argparse.Namespace(version=True)
+
+    parser.add_argument('script', help='Script to run')
+    parser.add_argument('target', nargs='?', default='build', help='Target object to build; defaults to \'build\'')
+
+    parser.add_argument('--version', action='store_true', help='Print version info and exit')
+    parser.add_argument('--clear', action='store_true', help='Clear output directory')
+    parser.add_argument('--clear-cache', action='store_true', help='Clear cache before compiling')
+
+    parser.add_argument('--threads', '-t', type=int, help='Set thread count; defaults to cores*2')
+    parser.add_argument('--no-threading', '-nt', action='store_true', help='Disable multithreaded compiling')
+
+    # TODO: Make target '*' instead of '?' so multiple targets could be ran from the same command
+
+    return parser.parse_args(args)
+
+import sys
+args = _parse_args(sys.argv[1:])
 
 def run():
     import importlib
@@ -9,34 +33,43 @@ def run():
     import os
     from pathlib import Path
 
-    if len(sys.argv) == 2:
-        if sys.argv[1] == '--version':
-            print('pygrunt version', pygrunt.version)
-            print('On branch', pygrunt.branch)
+    if args.version:
+        print('pygrunt version', pygrunt.version)
+        print('Branch', pygrunt.branch)
+        if pygrunt.commit:
             print('Commit', pygrunt.commit)
-            return True
-
-    # Parse command line arguments
-    if len(sys.argv) < 2:
-        my_name = Path(sys.argv[0]).name
-        print('Usage:', my_name, 'file', '[target=build]')
-        return False
+        return True
 
     Style.title('pygrunt version', pygrunt.version, '@', pygrunt.branch)
 
-    file = sys.argv[1]
-
-    target = 'build' if len(sys.argv) < 3 else sys.argv[2]
+    file = args.script
+    target = args.target
 
     # Import file
     path = Path(file)
-    if not path.is_file():
+
+    while True:
+        if path.is_file():
+            break
+
+        path = path.with_suffix('.py')
+        if path.is_file():
+            file = str(path)
+            break
+
         Style.error(path, "is not a file!")
         return False
 
     name = Path(file).with_suffix('')
     name = str(name)
     spec = importlib.util.spec_from_file_location(name, file)
+
+    if spec is None:
+        Style.error('Failed to load script; spec is empty')
+        Style.error('Module name:', name)
+        Style.error('File:', file)
+        return False
+
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
 

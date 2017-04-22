@@ -2,6 +2,7 @@ from pathlib import Path
 from .style import Style
 from .fileset import FileSet, DirectorySet
 import pygrunt.platform as platform
+import pygrunt # args
 
 class StageFailException(Exception):
     def __init__(self, stage):
@@ -209,36 +210,107 @@ class Project(BarebonesProject):
         Style.info('Source directory is', self.working_dir)
         Style.info('Build directory is', self.output_dir)
 
+        if pygrunt.args.clear:
+            import os
+            Style.info('Cleaning up')
+
+            all_entries = Path(self.output_dir).glob('**/*')
+            delete_files = [entry for entry in all_entries if entry.is_file()]
+            delete_dirs = [entry for entry in all_entries if entry.is_dir()]
+
+            for file in delete_files:
+                try:
+                    os.remove(str(file))
+                    Style.info('Removed file', str(file))
+                except Exception as e:
+                    Style.warning('Failed to remove file', str(file))
+                    Style.warning(e)
+
+            for dir in delete_dirs:
+                try:
+                    os.rmdir(str(dir))
+                    Style.info('Removed directory', str(dir))
+                except Exception as e:
+                    Style.warning('Failed to remove directory', str(dir))
+                    Style.warning(e)
+
+            # TODO: Signal project to stop
+            return True
+
         # Try loading cache for self.recompile
         cc.recompile.load_cache(os.path.join(self.output_dir, 'recompile.cache'))
+        if pygrunt.args.clear_cache:
+            cc.recompile.clear_cache()
 
         # Go through each source file and then link them
         object_files = []
 
+        from concurrent.futures import ThreadPoolExecutor
+        from threading import Lock
+        to_compile = []
+        futures = []
+
         for idx, file in enumerate(self.sources):
-            # TODO: pathlib.Path instead of os.path
-            in_file = str(file)
-            in_file = os.path.relpath(in_file, self.working_dir)
+            in_file = file.relative_to(self.working_dir)
 
-            out_file = os.path.join(self.output_dir, in_file)
+            out_file = Path(self.output_dir, in_file)
             out_file = platform.current.as_object(out_file)
-            out_dir = os.path.dirname(out_file)
+            out_file = Path(out_file)
 
-            # Create path for output file if it does not exist
-            if not os.path.exists(out_dir):
-                os.makedirs(out_dir)
+            to_compile.append((file.resolve(), out_file, idx))
 
-            # Print what's happening
-            print_in = in_file
-            print_out = os.path.relpath(out_file, self.output_dir)
-            print('[{0:3.0f}%]'.format((idx+1)/len(self.sources)*100), end=' ')
-            Style.object('Compiling', in_file, '->', print_out)
+        print_lock = Lock()
+        def _process(in_file, out_file, index):
+            in_name = str(in_file.relative_to(self.working_dir))
+            out_name = str(out_file.relative_to(self.output_dir))
 
-            # Fail if one of the files doesn't compile
-            if not cc.compile_object(str(file), out_file):
-                raise StageFailException(__name__)
+            out_file.parent.mkdir(exist_ok=True, parents=True)
+            if cc.compile_object(str(in_file), str(out_file)):
+                object_files.append(str(out_file))
 
-            object_files.append(out_file)
+                with print_lock:
+                    percent = len(object_files) / len(self.sources)
+                    print('[{0:<3}%] '.format(int(percent*100)), end='')
+                    Style.object('Compiled', in_name, '->', out_name)
+
+                return True
+            else:
+                return False
+
+        def _process_done(f):
+            if f.cancelled():
+                return
+
+            with print_lock:
+                if f.exception():
+                    Style.error('Exception: ', f.exception())
+
+                if not f.result():
+                    Style.error('Fail')
+
+                if f.exception() or not f.result():
+                    Style.info('Cancelling tasks...')
+                    for f in futures:
+                        f.cancel()
+
+                    return False
+
+        import multiprocessing
+        if pygrunt.args.threads is None:
+            thread_count = multiprocessing.cpu_count() * 2
+        else:
+            thread_count = pygrunt.args.threads
+
+        print('Compiling with', thread_count, 'threads')
+        with ThreadPoolExecutor(max_workers=thread_count) as e:
+            for in_file, out_file, idx in to_compile:
+                f = e.submit(_process, in_file, out_file, idx)
+                f.add_done_callback(_process_done)
+                futures.append(f)
+
+        # Check if any of the futures failed
+        if any([f.cancelled() for f in futures]):
+            raise StageFailException(__name__)
 
         # Save compile cache
         cc.recompile.save_cache(os.path.join(self.output_dir, 'recompile.cache'))
