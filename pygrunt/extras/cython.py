@@ -1,5 +1,5 @@
 import pygrunt.platform as platform
-from pygrunt import Style, FileSet, StageFailException
+from pygrunt import Style, FileSet, DirectorySet, StageFailException
 
 from pathlib import Path
 
@@ -18,6 +18,8 @@ class Cython:
         self.debug = False
         self.cpp = False
         self.python = None
+
+        self.include_dirs = DirectorySet()
 
     @classmethod
     def add_to(klass, project, compile_generated=True):
@@ -108,6 +110,9 @@ class Cython:
         else:
             Style.warning('Can\'t compile for Python version', self.python)
             Style.warning('Skipping flag')
+
+        for include_dir in self.include_dirs:
+            arg_settings.extend(['-I', str(include_dir)])
 
         Path(out_file).parent.mkdir(parents=True, exist_ok=True)
         args = ['cython'] + arg_settings + [str(in_file), '-o', str(out_file)]
