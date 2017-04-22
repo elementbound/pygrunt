@@ -98,14 +98,7 @@ in the future.**
 
 ## Todo ##
 
-* Decide what should go into the Compiler and what should go into the Project. The line between
-    the two is a bit ambigious at the moment. The Project should contain all the necessary
-    information, the Compiler should just turn those into instructions for the actual compiler
-    process.
-* More features, of course
-* If I have enough time, add support for another compiler ( clang? ) just as a proof of concept
-
-For a better description of other planned features, see the [proposals](proposed.md).
+See the [proposals](proposed.md).
 
 ## License ##
 
