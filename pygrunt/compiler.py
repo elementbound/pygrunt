@@ -111,7 +111,7 @@ class Compiler:
         # TODO: Maybe use something more elegant than self._args?
         old_args = self._args
         if out_file.is_file():
-            if not self.recompile.should_recompile(in_file):
+            if not self.recompile.should_recompile(str(in_file)):
                 # Style.info('Nothing to do with', in_file)
                 return True
         self._args = old_args
