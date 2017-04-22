@@ -1,5 +1,5 @@
 from pygrunt.style import Style
-from pygrunt.version import version
+import pygrunt
 
 def run():
     import importlib
@@ -11,8 +11,10 @@ def run():
 
     if len(sys.argv) == 2:
         if sys.argv[1] == '--version':
-            print('pygrunt version', version)
-            return True 
+            print('pygrunt version', pygrunt.version)
+            print('On branch', pygrunt.branch)
+            print('Commit', pygrunt.commit)
+            return True
 
     # Parse command line arguments
     if len(sys.argv) < 2:
