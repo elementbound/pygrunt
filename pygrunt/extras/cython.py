@@ -109,7 +109,8 @@ class Cython:
             Style.warning('Can\'t compile for Python version', self.python)
             Style.warning('Skipping flag')
 
-        args = ['cython'] + arg_settings + [in_file, '-o', out_file]
+        Path(out_file).parent.mkdir(parents=True, exist_ok=True)
+        args = ['cython'] + arg_settings + [str(in_file), '-o', str(out_file)]
 
         result = subprocess.run(args)
         if result.returncode != 0:
@@ -125,9 +126,11 @@ class Cython:
         else:
             return str(Path(filename).with_suffix('.so'))
 
-    @staticmethod
-    def as_source(filename):
-        return str(Path(filename))+'.c'
+    def as_source(self, filename):
+        if self.cpp:
+            return str(Path(filename))+'.cpp'
+        else:
+            return str(Path(filename))+'.c'
 
     @staticmethod
     def find_include_dir(filename="Python.h"):

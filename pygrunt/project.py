@@ -21,6 +21,7 @@ class BarebonesProject:
         self.name = name if name is not None else self.__class__.__name__
 
         self.sources = FileSet()
+        self.compiler = None
 
         self.working_dir = None
         self.output_dir = None
@@ -317,8 +318,10 @@ class Project(BarebonesProject):
 
         # Produce executable
         if self.type == 'executable':
+            Style.link('Linking executable', self.executable)
             cc.link_executable(object_files, self.executable)
         elif self.type == 'library' or self.type == 'shared':
+            Style.link('Linking library', self.executable)
             cc.link_library(object_files, self.executable)
         else:
             Style.error('Can\'t produce', self.type)

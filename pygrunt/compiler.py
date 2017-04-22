@@ -3,6 +3,7 @@ from .fileset import FileSet, DirectorySet
 import pygrunt.recompile as recompile
 import pygrunt.platform as platform
 import collections
+from pathlib import Path
 
 class Compiler:
     def __init__(self):
@@ -100,19 +101,22 @@ class Compiler:
 
     def compile_object(self, in_file, out_file):
         import subprocess
-        import os.path
+
+        in_file = Path(in_file)
+        out_file = Path(out_file)
 
         # Skip compile if RecompileStrategy says so
         # Since preprocess_source ( possibly used by recompile ) also modifies self._args,
         # we gotta back it up
         # TODO: Maybe use something more elegant than self._args?
         old_args = self._args
-        if os.path.isfile(out_file):
+        if out_file.is_file():
             if not self.recompile.should_recompile(in_file):
                 # Style.info('Nothing to do with', in_file)
                 return True
         self._args = old_args
 
+        Path(out_file).parent.mkdir(parents=True, exist_ok=True)
         self._args.extend(self._build_compiler_flags())
         result = subprocess.run(self._args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
 
@@ -128,7 +132,7 @@ class Compiler:
     def link_executable(self, in_files, out_file):
         import subprocess
 
-        Style.link('Linking executable', out_file, '... ')
+        Path(out_file).parent.mkdir(parents=True, exist_ok=True)
         self._args.extend(self._build_linker_flags())
         result = subprocess.run(self._args)
         return result.returncode == 0
@@ -136,7 +140,7 @@ class Compiler:
     def link_library(self, in_files, out_file):
         import subprocess
 
-        Style.link('Linking library', out_file)
+        Path(out_file).parent.mkdir(parents=True, exist_ok=True)
         self._args.extend(self._build_linker_flags())
         result = subprocess.run(self._args)
         return result.returncode == 0
@@ -208,25 +212,25 @@ class GCCCompiler(Compiler):
             self.unique_flags['std'] = '-std='+std
 
     def preprocess_source(self, in_file, additional_args=[]):
-        self._args = [self.executable_path, '-E', in_file]
+        self._args = [self.executable_path, '-E', str(in_file)]
         return super().preprocess_source(in_file, additional_args)
 
     def compile_object(self, in_file, out_file):
-        self._args = [self.executable_path, '-c', in_file, '-o', out_file]
+        self._args = [self.executable_path, '-c', str(in_file), '-o', str(out_file)]
         return super().compile_object(in_file, out_file)
 
     def link_executable(self, in_files, out_file):
         self._args = [self.executable_path]
-        self._args.extend(in_files)
-        self._args.extend(['-o', out_file])
+        self._args.extend([str(file) for file in in_files])
+        self._args.extend(['-o', str(out_file)])
         self._args.extend(self.unique_flags.values())
 
         return super().link_executable(in_files, out_file)
 
     def link_library(self, in_files, out_file):
         self._args = [self.executable_path, '-shared']
-        self._args.extend(in_files)
-        self._args.extend(['-o', out_file])
+        self._args.extend([str(file) for file in in_files])
+        self._args.extend(['-o', str(out_file)])
         self._args.extend(self.unique_flags.values())
 
         return super().link_library(in_files, out_file)
