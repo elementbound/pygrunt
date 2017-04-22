@@ -22,7 +22,7 @@ def run():
         print('Usage:', my_name, 'file', '[target=build]')
         return False
 
-    Style.title('pygrunt version', version)
+    Style.title('pygrunt version', pygrunt.version, '@', pygrunt.branch)
 
     file = sys.argv[1]
 
