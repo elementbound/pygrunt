@@ -346,6 +346,9 @@ class Project(BarebonesProject):
         else:
             thread_count = pygrunt.args.threads
 
+        if pygrunt.args.no_threading:
+            thread_count = 1
+
         print('Compiling with', thread_count, 'threads')
         with ThreadPoolExecutor(max_workers=thread_count) as e:
             for in_file, out_file, idx in to_compile:
