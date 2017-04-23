@@ -261,3 +261,14 @@ necessarily support them in a clean way.
  * Stage defs instead of stage hooks
  * Project class is getting bloated
  * Uniform way to do something to a bunch of files? ( aka. support threading properly )
+ * User-side classes vs. internal classes ( what talks to the user and what doesn't )
+ * More sophisticated printing? 
+
+## pathlib.Path ##
+
+I want to use pathlib.Path internally to handle Paths. Obviously, strings could also come from
+the user. So most of the time whatever the input is, it's converted to path and then used.
+
+However, I have encountered many inconsistencies in the codebase in this regard. So this needs
+some thorough testing and checking of the code. Also, this kinda begs the question - are
+Paths really worth it, or should I just stick with os.path?
