@@ -91,7 +91,7 @@ class Cython:
             Style.error('Please add a dummy preprocess stage')
             raise StageFailException(__name__)
 
-    def process(self, in_file, out_file):
+    def process(self, in_file, out_file, embed=False):
         import subprocess
 
         arg_settings = ['-w', self.working_directory]
@@ -111,11 +111,34 @@ class Cython:
             Style.warning('Can\'t compile for Python version', self.python)
             Style.warning('Skipping flag')
 
+        if embed:
+            arg_settings.append('--embed=' + embed)
+
         for include_dir in self.include_dirs:
             arg_settings.extend(['-I', str(include_dir)])
 
         Path(out_file).parent.mkdir(parents=True, exist_ok=True)
-        args = ['cython'] + arg_settings + [str(in_file), '-o', str(out_file)]
+
+        while True:
+            try:
+                in_file = Path(in_file)
+                in_file = str(in_file)
+                in_file = [in_file]
+                break
+            except:
+                pass
+
+            try:
+                in_file = [str(Path(file)) for file in in_file]
+                break
+            except:
+                pass
+
+            raise TypeError('Input can either be a single Path-like or a sequence of Path-likes')
+
+        # TODO: Rename in_file to in_files
+        args = ['cython'] + arg_settings + in_file + ['-o', str(out_file)]
+        print(args)
 
         result = subprocess.run(args)
         if result.returncode != 0:
@@ -176,3 +199,7 @@ class Cython:
                 return str(path)
 
         return None
+
+# TODO: Cython project
+# TODO: Embed support for Cython project
+# TODO: Somehow package a whole set of modules with a runner inside? 
