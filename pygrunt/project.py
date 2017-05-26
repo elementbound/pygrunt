@@ -11,10 +11,15 @@ class StageFailException(Exception):
 
 
 class StageSkipException(Exception):
-    def __init__(stage):
+    def __init__(self, stage):
         self.stage = stage
         super().__init__("Stage \"{0}\" requested skip".format(stage))
 
+
+class ProjectDoneException(Exception):
+    def __init__(self, project):
+        self.project = project
+        super().__init__("Project \"{0}\" requested finish".format(project.name))
 
 class BarebonesProject:
     def __init__(self, name=None):
@@ -103,7 +108,7 @@ class BarebonesProject:
             Style.title('[{0}/{1}]'.format(idx+1, len(self.stages)), 'Running stage', stage.__name__)
 
             try:
-                # Apply all decorators
+                # Apply all hooks
                 hooks = self._hooks_for_stage(stage)
                 hooked_stage = stage
 
@@ -117,6 +122,8 @@ class BarebonesProject:
                 return False
             except StageSkipException:
                 pass
+            except ProjectDoneException:
+                return True
 
         return True
 
@@ -176,6 +183,10 @@ class Project(BarebonesProject):
                 # Try loading recompile cache
                 project.compiler.recompile.load_cache(cachefile)
 
+                # Clear cache if requested
+                if pygrunt.args.clear_cache:
+                    cc.recompile.clear_cache()
+
                 fn()
 
                 # Save cache
@@ -191,9 +202,8 @@ class Project(BarebonesProject):
 
                 if pygrunt.args.clear:
                     self.clear()
-
-                    # TODO: Find a better way to stop the project
-                    raise StageFailException(__name__)
+                    # Finish project after clearing
+                    raise ProjectDoneException(self)
 
             return _hook
 
@@ -201,7 +211,18 @@ class Project(BarebonesProject):
 
     def clear(self):
         import os
+
+        # Well this is tedious
         Style.info('Cleaning up')
+        Style.warning('This will delete ', end='')
+        Style.title('everything', end='')
+        print(' in the build folder. ')
+
+        Style.warning('Continue? [y/n]', end=' ')
+
+        y = input()
+        if y.lower() != 'y':
+            raise StageFailException(__name__)
 
         delete_files = []
         delete_dirs = []
@@ -254,38 +275,6 @@ class Project(BarebonesProject):
 
         Style.info('Source directory is', self.working_dir)
         Style.info('Build directory is', self.output_dir)
-
-        if pygrunt.args.clear:
-            import os
-            Style.info('Cleaning up')
-
-            all_entries = Path(self.output_dir).glob('**/*')
-            delete_files = [entry for entry in all_entries if entry.is_file()]
-            delete_dirs = [entry for entry in all_entries if entry.is_dir()]
-
-            for file in delete_files:
-                try:
-                    os.remove(str(file))
-                    Style.info('Removed file', str(file))
-                except Exception as e:
-                    Style.warning('Failed to remove file', str(file))
-                    Style.warning(e)
-
-            for dir in delete_dirs:
-                try:
-                    os.rmdir(str(dir))
-                    Style.info('Removed directory', str(dir))
-                except Exception as e:
-                    Style.warning('Failed to remove directory', str(dir))
-                    Style.warning(e)
-
-            # TODO: Signal project to stop
-            return True
-
-        # Try loading cache for self.recompile
-        cc.recompile.load_cache(os.path.join(self.output_dir, 'recompile.cache'))
-        if pygrunt.args.clear_cache:
-            cc.recompile.clear_cache()
 
         # Go through each source file and then link them
         object_files = []
@@ -359,9 +348,6 @@ class Project(BarebonesProject):
         # Check if any of the futures failed
         if any([f.cancelled() for f in futures]):
             raise StageFailException(__name__)
-
-        # Save compile cache
-        cc.recompile.save_cache(os.path.join(self.output_dir, 'recompile.cache'))
 
         # Produce executable
         if self.type == 'executable':
