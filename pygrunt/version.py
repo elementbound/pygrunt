@@ -10,7 +10,7 @@ def _get_gitinfo():
     git = platform.current.find_executable('git')
     if git is None:
         # No git installed; assume we're on master
-        return 'master'
+        return ('master', '')
 
     cwd = str(Path(__file__).parent)
 
